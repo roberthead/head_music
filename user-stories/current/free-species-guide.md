@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-15T16:00:12-05:00
   planned_at:   2026-11-15T19:54:14-05:00
   finished_at:
-  updated_at:   2026-11-16T09:39:03-05:00
+  updated_at:   2026-11-16T10:01:01-05:00
 -->
 
 # Story: Free Species Guide
@@ -68,10 +68,11 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 
 ### Length
 
-- New `MinimumBars.with(n)` and `MaximumBars.with(n)` guidelines, modeled on `MinimumNotes`/`MaximumNotes`
-- The guide takes `bars:` and passes it through: an Integer means exactly that many bars (`bars: 8`), a Range sets the limits (`8..12`, or `8..` for at least eight). Unset by default, so the guide is neutral about length unless an exercise asks
+- A new `BarCount.with(range)` guideline, one item for both limits, so every way of writing a limit weighs the same
+- The guide takes `bars:` and passes it through: an Integer means exactly that many bars (`bars: 8`), a Range sets the limits (`8..12`, `8..` for at least eight, `..12` for at most twelve, and `8...12` excluding twelve, as Ruby reads them). Unset by default, so the guide is neutral about length unless an exercise asks
 - Bars are counted from the first entry of either voice to the last note, so a staggered entry does not count as missing bars
-- A passage outside the range loses grade in proportion to how far outside it is
+- A passage outside the range loses grade in proportion to how far outside it is: a short one marks every note with fitness actual ÷ minimum, as `MinimumNotes` does; a long one marks the notes in the bars past the limit, scored by their share of the notes, as `MaximumNotes` does
+- `BarCount` is a secondary item: length is an exercise's requirement rather than what the guide teaches, so setting `bars:` never changes the weight of the dissonance, cadence, and texture rules
 
 ### Verification
 
@@ -97,7 +98,7 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 2. The species suspension rules stay on the cantus firmus.
 3. Decorated suspension resolutions are allowed, as in fifth species, judged by a free-species rule: the resolution is what the suspended voice sounds on the next strong beat, against whatever the other voice sounds then. Suspensions over beat 3 resolve on the next downbeat (revised in planning review).
 4. `CompositeGuide#with` configures the composite as a whole.
-5. `bars: 8` means exactly eight; `8..` means at least eight.
+5. `bars: 8` means exactly eight; `8..` means at least eight. One secondary `BarCount` guideline holds the limit (planning review), so how a limit is written does not change the weight of anything else.
 6. Strings follow the English-first precedent; translations are their own story.
 7. Fux's fifth-species examples are the corpus for the new guidelines only; the inherited craft already marks some of Fux's lines under `fifth_species` (revised in planning review).
 8. Hidden octaves and fifths between beats are not checked, matching fifth species.
@@ -143,14 +144,14 @@ First move metric strength onto the meter in the shared contexts, with the speci
 5. **`IndependentTextures`** (new, primary). Extract the bar-texture classification from `guidelines/mix_species_textures.rb` into a reusable object taking a voice (`MixSpeciesTextures` keeps its behavior through it). The new guideline marks runs of more than `maximum_run:` (default 2) bars where both voices share a single-species texture.
 6. **`AllowFreeSpeciesRhythmicValues`** (new subclass of `AllowFifthSpeciesRhythmicValues`, primary in the melody guide): no whole-note restriction; with `dotted_rhythms: true`, no mark for a dotted note whose tied spelling would pass, and no unpaired-eighth mark for an eighth after a dotted quarter that steps to the next note. That eighth still counts toward the bar's eighth-note limit.
 7. **`ClausulaVera`** (new, primary): the final notes form an octave or unison on the tonic; the last notes before them are the leading tone (raised in minor and the modes that need it) and the second degree, sounding together, each stepping to the tonic in contrary motion. Either voice may carry either. `.with(forms:)` defaults to `[:clausula_vera]`; any other form raises `ArgumentError` naming what is not yet supported.
-8. **`MinimumBars` and `MaximumBars`** (new): on the `MinimumThreshold` / `MaximumNotes` pattern, counting bars from the first note of either voice to the last note of either. Primary when configured, as `MinimumNotes`/`MaximumNotes` are in `FuxCantusFirmus`.
+8. **`BarCount`** (new): `BarCount.with(range)`, counting bars from the first note of either voice to the last note of either. Below the range, mark every note with fitness actual ÷ minimum (the `MinimumThreshold` pattern); above it, mark the graded voice's notes in the bars past the limit, with the voice's note count as the fitness denominator (the `MaximumNotes` pattern). `template_values` gives the range's ends for the strings, with a wording for each of exact, at least, at most, and between.
 9. **The guides.**
    - `lib/head_music/style/guides/free_species_melody.rb`: `items_by_tier(dotted_rhythms: false)`: gate `MELODIC_GATES`; primary `AllowFreeSpeciesRhythmicValues`; secondary `MOVING_MELODIC_CRAFT` except `StepUpToFinalNote`, plus `StepToFinalNote` and `PreferLongBeforeShort`.
-   - `lib/head_music/style/guides/free_species_harmony.rb`: `items_by_tier(bars: nil)`: gate `HARMONIC_GATES`; primary `FreeDissonanceTreatment`, `ClausulaVera`, `IndependentTextures`, and the bar limits when `bars:` is set (an Integer means exactly that many; a Range sets either or both ends); secondary `INHERITED_HARMONIC_CRAFT`.
+   - `lib/head_music/style/guides/free_species_harmony.rb`: `items_by_tier(bars: nil)`: gate `HARMONIC_GATES`; primary `FreeDissonanceTreatment`, `ClausulaVera`, `IndependentTextures`; secondary `INHERITED_HARMONIC_CRAFT`, plus `BarCount.with(range)` when `bars:` is set (an Integer `n` becomes `n..n`).
    - `lib/head_music/style/guide.rb`: add both to `GUIDE_CLASSES` and `"free_species" => %w[free_species_melody free_species_harmony]` to `COMPOSITE_MEMBERS`.
    - `lib/head_music.rb`: require the new files in dependency order (guideline extractions before their users, guides before `style/guide`).
 10. **`CompositeGuide#with`.** `lib/head_music/style/guides/composite_guide.rb`: routes each option to the members whose `items_by_tier` takes that keyword, raises `ArgumentError` for an option no member takes, and returns a new composite that keeps the registered one's display name and instruction (an unregistered composite otherwise falls back to "Free Species Melody + Free Species Harmony").
-11. **Strings.** `lib/head_music/locales/en.yml`: guide instructions for `free_species`, `free_species_melody`, `free_species_harmony` (the `free_species` text explains that no cantus firmus is given and the name is the gem's own) and names, instructions and violations for the six new guidelines, including configured variants. British English where its note-value vocabulary differs; the other locales fall back to English until the translations story. `Template.verify!` covers the registered entries at load.
+11. **Strings.** `lib/head_music/locales/en.yml`: guide instructions for `free_species`, `free_species_melody`, `free_species_harmony` (the `free_species` text explains that no cantus firmus is given and the name is the gem's own) and names, instructions and violations for the five new guidelines, including configured variants. British English where its note-value vocabulary differs; the other locales fall back to English until the translations story. `Template.verify!` covers the registered entries at load.
 12. **CHANGELOG** under Unreleased: the guide, the configuration, and the meter change as a note even though it changes no grades.
 
 ### Data model changes
@@ -161,7 +162,7 @@ None.
 
 - `spec/head_music/style/guideline/voice_context_spec.rb` (new): `downbeat_position?` and `strong_beat_position?` in 4/4, 3/2 and 2/2, against a cantus firmus that moves, and against none.
 - Behavior-preserving extractions (steps 3 and 5) are proven by the existing specs for `FloridDissonanceTreatment`, `WeakBeatDissonanceTreatment`, `EmbellishedSuspensionTreatment`, and `MixSpeciesTextures`, plus direct specs of the extracted objects.
-- One spec per new guideline under `spec/head_music/style/guidelines/`, built with `HeadMusic::Notation::ABC.parse`, covering the cases in the acceptance criteria: the five dissonance-ownership cases, the suspension owned by the held voice, a passing tone on beat 3 in 4/4 unmarked, a downbeat suspension resolving on beat 3 with decoration while the other voice moves, a beat-3 suspension resolving on the next downbeat, a resolution dissonant with the moved voice (marked); textures (quarters against quarters for three bars marked, quarters against whole notes not); dotted rhythms on and off; the cadence with the leading tone in either voice, in minor, with both voices stepping the same way, and with 5→1; bars as Integer, Range, and endless Range, counted from a staggered entry.
+- One spec per new guideline under `spec/head_music/style/guidelines/`, built with `HeadMusic::Notation::ABC.parse`, covering the cases in the acceptance criteria: the five dissonance-ownership cases, the suspension owned by the held voice, a passing tone on beat 3 in 4/4 unmarked, a downbeat suspension resolving on beat 3 with decoration while the other voice moves, a beat-3 suspension resolving on the next downbeat, a resolution dissonant with the moved voice (marked); textures (quarters against quarters for three bars marked, quarters against whole notes not); dotted rhythms on and off; the cadence with the leading tone in either voice, in minor, with both voices stepping the same way, and with 5→1; bars as Integer, Range, endless, beginless, and exclusive Range, counted from a staggered entry, with marks and fitness for short and long passages, and an assertion that a guide configured with `bars: 8..` and one with `bars: 8..12` grade a passage of the right length but with a dissonance fault the same.
 - `spec/head_music/style/guides/free_species_melody_spec.rb`, `free_species_harmony_spec.rb`: membership by tier, and graded passages.
 - `spec/head_music/style/guides/composite_guide_spec.rb`: `#with` routing, the unknown-option error, display name and instruction of a configured composite.
 - `spec/head_music/style/guides/base_spec.rb`: melodic and harmonic guide counts (17 and 8), and an entry in "the harmony guides hold the rules they held" for `free_species_harmony`.
