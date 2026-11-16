@@ -803,6 +803,30 @@ en:
           instruction: "Keep every note on your own side of the notes next to it in the other voice."
           violations:
             default: "Avoid overlapping voices. Maintain the high-low relationship between voices even for adjacent notes."
+        bar_count:
+          name: "Length in bars"
+          instruction:
+            exact:
+              one: "Write %{number} bar."
+              other: "Write %{number} bars."
+            at_least:
+              one: "Write at least %{number} bar."
+              other: "Write at least %{number} bars."
+            at_most:
+              one: "Write no more than %{number} bar."
+              other: "Write no more than %{number} bars."
+            between: "Write between %{minimum} and %{maximum} bars."
+          violations:
+            exact:
+              one: "Write %{number} bar."
+              other: "Write %{number} bars."
+            at_least:
+              one: "Write at least %{number} bar."
+              other: "Write at least %{number} bars."
+            at_most:
+              one: "Write no more than %{number} bar."
+              other: "Write no more than %{number} bars."
+            between: "Write between %{minimum} and %{maximum} bars."
         clausula_vera:
           name: "Clausula vera"
           instruction: "Close on the tonic in an octave or unison, one voice stepping up from the leading tone as the other steps down from the second degree."
