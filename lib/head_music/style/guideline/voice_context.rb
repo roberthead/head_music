@@ -34,6 +34,14 @@ class HeadMusic::Style::Guideline
       position.strong?
     end
 
+    # The first strong beat after the position: later in its bar, or else the
+    # next bar's downbeat.
+    def next_strong_beat(position)
+      later_counts = (position.count + 1)..position.meter.counts_per_bar
+      later_counts.map { |count| HeadMusic::Content::Position.new(voice.flow, position.bar_number, count, 0) }
+        .detect(&:strong?) || position.start_of_next_bar
+    end
+
     def bar_downbeats
       @bar_downbeats ||= bar_numbers.map { |bar| HeadMusic::Content::Position.new(voice.flow, bar, 1, 0) }
     end

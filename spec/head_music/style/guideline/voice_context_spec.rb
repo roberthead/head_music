@@ -7,7 +7,7 @@ describe HeadMusic::Style::Guideline::VoiceContext do
     Class.new do
       include HeadMusic::Style::Guideline::VoiceContext
 
-      public :downbeat_position?, :strong_beat_position?, :bar_downbeats
+      public :downbeat_position?, :strong_beat_position?, :bar_downbeats, :next_strong_beat
 
       attr_reader :voice
 
@@ -47,6 +47,11 @@ describe HeadMusic::Style::Guideline::VoiceContext do
         .to eq [true, false, true, false]
     end
 
+    it "finds the next strong beat later in the bar, or else the next downbeat" do
+      expect(%w[1:1:000 1:2:000 1:3:000 1:4:000].map { |code| context.next_strong_beat(position(flow, code)).to_s })
+        .to eq %w[1:3:000 1:3:000 2:1:000 2:1:000]
+    end
+
     it "walks one downbeat per bar across the passage" do
       expect(context.bar_downbeats.map(&:to_s)).to eq %w[1:1:000 2:1:000]
     end
@@ -66,6 +71,10 @@ describe HeadMusic::Style::Guideline::VoiceContext do
     it "counts only beat one strong" do
       expect(%w[1:1:000 1:2:000 1:3:000].map { |code| context.strong_beat_position?(position(flow, code)) })
         .to eq [true, false, false]
+    end
+
+    it "finds the next strong beat in the next bar" do
+      expect(context.next_strong_beat(position(flow, "1:1:000")).to_s).to eq "2:1:000"
     end
 
     it "finds the downbeat on beat one" do

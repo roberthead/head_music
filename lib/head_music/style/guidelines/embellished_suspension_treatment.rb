@@ -28,9 +28,7 @@ class HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment < HeadMusic::
     position = cf_note.position
     return unless position.count == 1 && position.tick.zero?
 
-    slot = (2..position.meter.counts_per_bar)
-      .map { |count| HeadMusic::Content::Position.new(flow, "#{position.bar_number}:#{count}") }
-      .detect(&:strong?)
-    slot if slot&.within_voice_event?(cf_note)
+    slot = next_strong_beat(position)
+    slot if slot.bar_number == position.bar_number && slot.within_voice_event?(cf_note)
   end
 end
