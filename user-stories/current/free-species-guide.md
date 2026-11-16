@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-15T16:00:12-05:00
   planned_at:   2026-11-15T19:54:14-05:00
   finished_at:
-  updated_at:   2026-11-16T10:07:08-05:00
+  updated_at:   2026-11-16T10:35:46-05:00
 -->
 
 # Story: Free Species Guide
@@ -24,7 +24,7 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 - A registered composite guide, `free_species`, made of a melody guide and a harmony guide, as the species composites are in `HeadMusic::Style::Guide`
 - The guide grades either voice of a two-voice flow, and neither voice has to be marked `cantus_firmus?`. Assessing each voice in turn grades the whole passage
 - Display names and instructions exist in English, and in British English wherever its note-value vocabulary differs, following the precedent of `fifth_species` and `mix_species_textures`; the other locales fall back to English until [free-species-translations](../backlog/free-species-translations.md). The instruction text says that no cantus firmus is given and both lines are composed
-- The guide is configurable as a whole: `Guide.get("free_species").with(dotted_rhythms: true, bars: 8..12)` routes each option to the member guide that takes it, through a new `CompositeGuide#with`. An option no member takes raises `ArgumentError`, and a configured composite keeps the registered guide's display name and instruction
+- The guide is configurable as a whole: `Guide.get("free_species").with(dotted_rhythms: true, bars: 8..12)` routes each option to the member guide that takes it, through a new `CompositeGuide#with`. An option no member takes raises `ArgumentError`, and a configured composite keeps the registered guide's display name and instruction. Its `key` is nil, as a `Configured` guide's is, so `Guide.get(key)` never hands back the unconfigured guide in its place
 - Nothing disqualifies: every fault lowers the grade, never ends it. Each guideline is placed in a tier (gate, primary, secondary) with a reason, consistent with the tier policy `SpeciesHarmony` documents
 - CHANGELOG entry under Unreleased
 
@@ -119,7 +119,7 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 
 ### Downstream
 
-BardTheory's backlog story `unit-10-composition-exercises` waits on this guide and needs it released to RubyGems.
+BardTheory's backlog story `unit-10-composition-exercises` waits on this guide and needs it released to RubyGems. An exercise that sets `bars:` or `dotted_rhythms:` must store those options beside the key `free_species` and call `.with` again when it grades, since a configured composite has no key of its own.
 
 ## Implementation Plan
 
@@ -151,7 +151,7 @@ First move metric strength onto the meter in the shared contexts, with the speci
    - `lib/head_music/style/guides/free_species_harmony.rb`: `items_by_tier(bars: nil)`: gate `HARMONIC_GATES`; primary `FreeDissonanceTreatment`, `ClausulaVera`, `IndependentTextures`; secondary `INHERITED_HARMONIC_CRAFT`, plus `BarCount.with(range)` when `bars:` is set (an Integer `n` becomes `n..n`).
    - `lib/head_music/style/guide.rb`: add both to `GUIDE_CLASSES` and `"free_species" => %w[free_species_melody free_species_harmony]` to `COMPOSITE_MEMBERS`.
    - `lib/head_music.rb`: require the new files in dependency order (guideline extractions before their users, guides before `style/guide`).
-10. **`CompositeGuide#with`.** `lib/head_music/style/guides/composite_guide.rb`: routes each option to the members whose `items_by_tier` takes that keyword, raises `ArgumentError` for an option no member takes, and returns a new composite that keeps the registered one's display name and instruction (an unregistered composite otherwise falls back to "Free Species Melody + Free Species Harmony").
+10. **`CompositeGuide#with`.** `lib/head_music/style/guides/composite_guide.rb`: routes each option to the members whose `items_by_tier` takes that keyword, raises `ArgumentError` for an option no member takes, and returns a new composite that keeps the registered one's display name and instruction (an unregistered composite otherwise falls back to "Free Species Melody + Free Species Harmony"). `key` stays nil, the reverse lookup it is today. The registered key it was configured from is kept for display only and takes no part in `==` or `hash`, so `Guide.key_for` and the registry are unaffected.
 11. **Strings.** `lib/head_music/locales/en.yml`: guide instructions for `free_species`, `free_species_melody`, `free_species_harmony` (the `free_species` text explains that no cantus firmus is given and the name is the gem's own) and names, instructions and violations for the five new guidelines, including configured variants. British English where its note-value vocabulary differs; the other locales fall back to English until the translations story. `Template.verify!` covers the registered entries at load.
 12. **CHANGELOG** under Unreleased: the guide, the configuration, and the meter change as a note even though it changes no grades.
 
@@ -165,7 +165,7 @@ None.
 - Behavior-preserving extractions (steps 3 and 5) are proven by the existing specs for `FloridDissonanceTreatment`, `WeakBeatDissonanceTreatment`, `EmbellishedSuspensionTreatment`, and `MixSpeciesTextures`, plus direct specs of the extracted objects.
 - One spec per new guideline under `spec/head_music/style/guidelines/`, built with `HeadMusic::Notation::ABC.parse`, covering the cases in the acceptance criteria: the five dissonance-ownership cases, the suspension owned by the held voice, a passing tone on beat 3 in 4/4 unmarked, a downbeat suspension resolving on beat 3 with decoration while the other voice moves, a beat-3 suspension resolving on the next downbeat, a resolution dissonant with the moved voice (marked); textures (quarters against quarters for three bars marked, quarters against whole notes not); dotted rhythms on and off; a dissonant eighth after a dotted quarter as a passing tone (no mark) and as a cambiata (marked), with the option on and off; the cadence with the leading tone in either voice, in minor, with both voices stepping the same way, and with 5→1; bars as Integer, Range, endless, beginless, and exclusive Range, counted from a staggered entry, with marks and fitness for short and long passages, and an assertion that a guide configured with `bars: 8..` and one with `bars: 8..12` grade a passage of the right length but with a dissonance fault the same.
 - `spec/head_music/style/guides/free_species_melody_spec.rb`, `free_species_harmony_spec.rb`: membership by tier, and graded passages.
-- `spec/head_music/style/guides/composite_guide_spec.rb`: `#with` routing, the unknown-option error, display name and instruction of a configured composite.
+- `spec/head_music/style/guides/composite_guide_spec.rb`: `#with` routing, the unknown-option error, display name and instruction of a configured composite, its nil `key`, and equality that ignores where it was configured from.
 - `spec/head_music/style/guides/base_spec.rb`: melodic and harmonic guide counts (17 and 8), and an entry in "the harmony guides hold the rules they held" for `free_species_harmony`.
 - `guide_strings_spec.rb` and `guide_item_strings_spec.rb` pick up the new strings; the exact English is pinned in the latter.
 - `spec/head_music/style/guides/free_species_corpus_spec.rb` (new): the four new guidelines leave no marks on either voice of any Fux fifth-species example, with named exclusions and reasons, on the pattern of `guide_species_diagonal_spec.rb`'s liberties.
