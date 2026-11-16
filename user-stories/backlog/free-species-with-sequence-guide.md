@@ -4,10 +4,10 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-11-15T15:45:00-05:00
+  updated_at:   2026-11-15T19:12:18-05:00
 -->
 
-# Story: Two-Voice Counterpoint with Sequence Guide
+# Story: Free Species with Sequence Guide
 
 ## Summary
 
@@ -44,7 +44,7 @@ SO THAT a student's sequence is checked by analysis: is the pattern actually res
   - Each setting left unset accepts anything. A sequence that falls short of a setting lowers the grade in proportion to how far it misses; nothing disqualifies
 - A melodic sequence in one voice over a free bass earns full credit. A contrapuntal sequence is not required
 - A secondary guideline, `AvoidOverlongSequences` (working name), lowers the grade from the fourth consecutive statement on. Its spec cites Kennan (see Sources) for the limit of three
-- A registered composite guide, `two_voice_counterpoint_with_sequence`, that is the free two-voice counterpoint guide plus the sequence guideline as a primary item. The guide passes its configuration through to the guideline, so an exercise can ask for, say, a real sequence down a second at one-bar offsets
+- A registered composite guide, `free_species_with_sequence`, that is the free species guide plus the sequence guideline as a primary item. The guide passes its configuration through to the guideline, so an exercise can ask for, say, a real sequence down a second at one-bar offsets
 - Display names and instructions in every locale (en, en_GB, de, es, fr, it, ru)
 - CHANGELOG entry under Unreleased
 
@@ -52,8 +52,8 @@ SO THAT a student's sequence is checked by analysis: is the pattern actually res
 
 ### Depends on
 
-- [free-two-voice-counterpoint-guide](free-two-voice-counterpoint-guide.md): this guide adds to it
-- [two-voice-counterpoint-with-imitation-guide](two-voice-counterpoint-with-imitation-guide.md): its detector compares a passage against another passage at any transposition. A melodic sequence is a voice imitating itself right away at a new level, so sequence detection should build on that matching rather than build a second copy of it. If the imitation story ships its detector without letting a voice follow itself, this story adds that
+- [free-species-guide](../current/free-species-guide.md): this guide adds to it
+- [free-species-with-imitation-guide](free-species-with-imitation-guide.md): its detector compares a passage against another passage at any transposition. A melodic sequence is a voice imitating itself right away at a new level, so sequence detection should build on that matching rather than build a second copy of it. If the imitation story ships its detector without letting a voice follow itself, this story adds that
 
 ### What sequence detection adds to imitation matching
 

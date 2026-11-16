@@ -4,10 +4,10 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-11-15T15:52:47-05:00
+  updated_at:   2026-11-15T19:12:18-05:00
 -->
 
-# Story: Two-Voice Counterpoint with Imitation Guide
+# Story: Free Species with Imitation Guide
 
 ## Summary
 
@@ -35,12 +35,12 @@ SO THAT imitation is judged by analysis and not just stated in the exercise's in
 ### Guideline and guide
 
 - A guideline that grades an opening in imitation: the second voice enters with the first voice's opening material after a delay, while the first voice keeps going. A loose imitation lowers the grade in proportion to its match score; it never disqualifies
-- The guideline is configured through `.with(...)`, with the same three settings as the sequence guideline in [two-voice-counterpoint-with-sequence-guide](two-voice-counterpoint-with-sequence-guide.md), so an exercise can ask for, say, real imitation at the fifth after one bar:
+- The guideline is configured through `.with(...)`, with the same three settings as the sequence guideline in [free-species-with-sequence-guide](free-species-with-sequence-guide.md), so an exercise can ask for, say, real imitation at the fifth after one bar:
   - `offset:` the rhythmic offset, meaning the delay between the two entries (for example, one bar or half a bar), or any
   - `kind:` `:real` (the follower copies the leader's intervals exactly, by semitones as well as by steps), `:free` (a tonal answer, or changes in interval or rhythm), or any
   - `transposition:` the interval of imitation, or a list of them. The default is the unison, octave, fifth, and fourth; setting it wider (for example, imitation at the second for a canon exercise) is allowed
   - An imitation that misses a setting lowers the grade in proportion to how far it misses
-- A registered composite guide, `two_voice_counterpoint_with_imitation`, that is the free two-voice counterpoint guide plus the imitation guideline as a primary item. The guide passes its configuration through to the guideline, following the precedent of `Guides::ContourMelody.with(contour:)` and its registered presets
+- A registered composite guide, `free_species_with_imitation`, that is the free species guide plus the imitation guideline as a primary item. The guide passes its configuration through to the guideline, following the precedent of `Guides::ContourMelody.with(contour:)` and its registered presets
 - Display names and instructions in every locale (en, en_GB, de, es, fr, it, ru)
 - CHANGELOG entry under Unreleased
 
@@ -48,7 +48,7 @@ SO THAT imitation is judged by analysis and not just stated in the exercise's in
 
 ### Depends on
 
-[free-two-voice-counterpoint-guide](free-two-voice-counterpoint-guide.md). This guide adds a primary item to that one, so the free guide has to exist first. The detector does not depend on it and can be built in parallel.
+[free-species-guide](../current/free-species-guide.md). This guide adds a primary item to that one, so the free species guide has to exist first. The detector does not depend on it and can be built in parallel.
 
 ### Why build general detection now
 
