@@ -803,6 +803,12 @@ en:
           instruction: "Keep every note on your own side of the notes next to it in the other voice."
           violations:
             default: "Avoid overlapping voices. Maintain the high-low relationship between voices even for adjacent notes."
+        clausula_vera:
+          name: "Clausula vera"
+          instruction: "Close on the tonic in an octave or unison, one voice stepping up from the leading tone as the other steps down from the second degree."
+          violations:
+            default: "Close with the clausula vera: the leading tone and the second degree, sounding together, stepping in contrary motion to the tonic in an octave or unison."
+            unraised: "Raise the leading tone so it rises a half step into the final."
         consonant_climax:
           name: "Single consonant climax"
           instruction: "Give the line one clear peak, consonant with the tonic, sounded once or twice with a step between."
