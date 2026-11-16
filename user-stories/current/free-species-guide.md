@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-15T16:00:12-05:00
   planned_at:   2026-11-15T19:54:14-05:00
   finished_at:
-  updated_at:   2026-11-16T15:31:00-05:00
+  updated_at:   2026-11-16T15:44:00-05:00
 -->
 
 # Story: Free Species Guide
@@ -225,8 +225,8 @@ Reviewed 2026-11-16 at `7737eabf`. Suite: 19,249 examples, 0 failures (`rake spe
 
 1. **Resolved: en_GB spells "neighbor" in the free dissonance strings.** Fixed by adding the en_GB entry. `en.yml:896-900` has no en_GB counterpart, so British English reads "neighbor tone… double neighbor" while `florid_dissonance_treatment` reads "neighbour" (`en_GB.yml:129-149`). Outside the criterion's note-value scope, but against the en_GB file's own convention (`en_GB.yml:89`). Small fix: add the entry.
 2. **Resolved: `ClausulaVera` does not check the falling 2→1 step's size in Phrygian.** It now requires a minor third (or tenth), or a major sixth (or thirteenth), just before the octave or unison, in every mode. `lower_approach_half_step?` (`clausula_vera.rb:96-99`) measures only the rising voice. In E Phrygian, F♯→E against D→E passes as a clausula vera. `Diatonic` still marks the F♯, so the grade drops, but not from the cadence rule the criterion names.
-3. **Low: a figure's stepwise run can cross a rest.** `consonant_run?` reads `voice.notes`, so `c z d e` explains the dissonant D as a passing tone. `NoRestsAfterNote` in the melody guide marks the rest, so this is mostly covered.
+3. **Resolved: a figure's stepwise run can cross a rest.** A rest now breaks the run in `FreeDissonanceTreatment`, so a dissonance entered from silence is marked; the species guides' figure detection is unchanged. `consonant_run?` reads `voice.notes`, so `c z d e` explains the dissonant D as a passing tone. `NoRestsAfterNote` in the melody guide marks the rest, so this is mostly covered.
 
 Observation, not a defect: with meter-based downbeats, a perfect fifth tied over a barline in both voices is marked as parallel fifths on downbeats, as a re-struck fifth already is. Only free species can produce it.
 
-Nothing blocks `finish`. Findings 1 and 2 are resolved.
+Nothing blocks `finish`. All three findings are resolved.
