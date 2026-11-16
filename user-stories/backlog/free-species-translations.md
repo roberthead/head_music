@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-11-16T10:01:05-05:00
+  updated_at:   2026-11-16T11:42:18-05:00
 -->
 
 # Story: Free Species Translations
@@ -18,7 +18,7 @@ SO THAT the feedback on a free species exercise doesn't drop into English
 ## Acceptance Criteria
 
 - Guide instructions for `free_species`, `free_species_melody`, and `free_species_harmony` in de, es, fr, it, and ru
-- Names, instructions, and violations for the guidelines the free species guide added (`FreeDissonanceTreatment`, `IndependentTextures`, `AllowFreeSpeciesRhythmicValues`, `ClausulaVera`, `BarCount`), including their configured variants, in the same locales
+- Names, instructions, and violations for the guidelines the free species guide added (`FreeDissonanceTreatment`, `IndependentTextures`, `ClausulaVera`, `BarCount`), including their configured variants, in the same locales
 - Russian plural forms (one, few, many) wherever a string pluralizes on a count
 - The instruction text keeps the free species framing in each language: no cantus firmus is given, and the name is the gem's own
 - `guide_strings_spec.rb` passes for every locale with no fallback to English for these keys
@@ -27,6 +27,8 @@ SO THAT the feedback on a free species exercise doesn't drop into English
 ## Notes
 
 Split from [free-species-guide](../current/free-species-guide.md) during its planning (2026-11-15), which followed the English-first precedent of `fifth_species` and `mix_species_textures`. Those two have the same gap and could join this story.
+
+`AllowFreeSpeciesRhythmicValues` was translated during implementation: German, French, Italian, and Russian fall back through British English, so without their own strings they read its note values in English, which `guide_strings_spec.rb` forbids. Its translations were written from each locale's `allow_fifth_species_rhythmic_values` and deserve the same review as the rest.
 
 ## Implementation Plan
 

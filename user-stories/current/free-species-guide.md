@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-15T16:00:12-05:00
   planned_at:   2026-11-15T19:54:14-05:00
   finished_at:
-  updated_at:   2026-11-16T10:46:43-05:00
+  updated_at:   2026-11-16T11:42:18-05:00
 -->
 
 # Story: Free Species Guide
