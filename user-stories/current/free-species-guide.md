@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-15T16:00:12-05:00
   planned_at:   2026-11-15T19:54:14-05:00
   finished_at:
-  updated_at:   2026-11-15T21:09:48-05:00
+  updated_at:   2026-11-16T09:14:43-05:00
 -->
 
 # Story: Free Species Guide
@@ -40,7 +40,7 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 
 ### Dissonance
 
-- Dissonance follows fifth species: only the downbeat forbids an attacked dissonance, and beat 3 in 4/4 takes a passing tone as fifth species allows (Fux figures 82, 86a and 88a do). Downbeat dissonance must be a prepared suspension that resolves down by step, either directly or with the decorated resolutions fifth species allows (`EmbellishedSuspensionTreatment`: the resolution arrives by the next strong beat). Weak-beat dissonance must be a passing tone, neighbor tone, nota cambiata, or double neighbor. The existing `DissonanceFigureDetection` is reused, not copied
+- Dissonance follows fifth species: only the downbeat forbids an attacked dissonance, and beat 3 in 4/4 takes a passing tone as fifth species allows (Fux figures 82, 86a and 88a do). A dissonance attacked on the downbeat is a fault. A dissonance held into a strong beat (the downbeat, or beat 3 in 4/4) is a suspension: prepared as a consonance, and resolved by the note the suspended voice sounds on the next strong beat, a step down and consonant with whatever the other voice sounds then. The notes between may decorate the resolution, as fifth species allows, and are judged by the rule for attacked dissonance. Any other attacked dissonance must be a passing tone, neighbor tone, nota cambiata, or double neighbor. The existing `DissonanceFigureDetection` is reused, not copied
 - **Either voice can explain a dissonance.** A dissonance is properly treated when at least one voice that attacks into it does so as a recognized figure, or when it is a suspension in the held voice. When no voice explains it, every voice that attacked into it is marked, so the fault counts in both voices' grades
 - Specs pin: one voice moving against a held note; a suspension (the held voice owns it; the moving voice is not marked); simultaneous dissonant passing tones in both voices (no mark; Salzer & Schachter p. 330 list "dissonant passing tones in both species parts" as a basic situation); a leap into a chord tone against a passing tone in the other voice (no mark); a simultaneous dissonance neither voice explains (both marked)
 
@@ -94,7 +94,7 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 
 1. Reuse `NoParallelPerfectWithSyncopation` for beat-to-beat parallels; no new guideline.
 2. The species suspension rules stay on the cantus firmus.
-3. Decorated suspension resolutions are allowed, as in fifth species.
+3. Decorated suspension resolutions are allowed, as in fifth species, judged by a free-species rule: the resolution is what the suspended voice sounds on the next strong beat, against whatever the other voice sounds then. Suspensions over beat 3 resolve on the next downbeat (revised in planning review).
 4. `CompositeGuide#with` configures the composite as a whole.
 5. `bars: 8` means exactly eight; `8..` means at least eight.
 6. Strings follow the English-first precedent; translations are their own story.
@@ -132,9 +132,9 @@ First move metric strength onto the meter in the shared contexts, with the speci
    - `lib/head_music/style/guidelines/no_parallel_perfect_across_barline.rb`: `next_downbeat_interval` takes the next bar's downbeat.
    - Run the whole species suite before any other change lands. Every existing spec must pass untouched, except the corpus snapshot rows described in the acceptance criteria; a failure is reported, not edited. Regenerate the snapshot with `rake style:snapshot_corpus_fitness` and show the diff before committing.
 2. **ConsonantDownbeats excuses a suspension in either voice.** `guidelines/consonant_downbeats.rb`: `tied_suspension?` asks whether any voice sounding at the downbeat began earlier, not only the graded one. Species-neutral, since a cantus firmus attacks every downbeat. It keeps `HARMONIC_CORE` whole for the free guide, which `base_spec` requires.
-3. **Extract figure detection into an object.** A new `HeadMusic::Style::Guideline::DissonanceFigures`, built from a line's notes, its melodic intervals, and a dissonance test, answers `passing_tone?`, `neighbor_tone?`, `cambiata_dissonance?`, `double_neighbor_member?`. `guidelines/dissonance_figure_detection.rb` delegates to one built from the graded voice, so the species guidelines are unchanged. Same for the decorated-resolution rule in `guidelines/embellished_suspension_treatment.rb`, so a free-species suspension resolves the way a fifth-species one may.
+3. **Extract figure detection into an object.** A new `HeadMusic::Style::Guideline::DissonanceFigures`, built from a line's notes, its melodic intervals, and a dissonance test, answers `passing_tone?`, `neighbor_tone?`, `cambiata_dissonance?`, `double_neighbor_member?`. `guidelines/dissonance_figure_detection.rb` delegates to one built from the graded voice, so the species guidelines are unchanged. The search for a bar's next strong beat in `guidelines/embellished_suspension_treatment.rb` (`resolution_position`) moves to a shared helper both use; `EmbellishedSuspensionTreatment` keeps its rule, including its fallback when the cantus note does not last to that beat, so fifth species is unchanged.
 4. **`FreeDissonanceTreatment`** (new, primary in the harmony guide). At each moment the two voices form a dissonance:
-   - downbeat with a voice held over: that voice owns it as a suspension (prepared as a consonance, resolved down by step, decorated resolutions allowed); if improper, mark the held voice
+   - a strong beat (downbeat or beat 3) with a voice held over: that voice owns it as a suspension. Prepared: consonant where it was attacked. Resolved: the note it sounds on the next strong beat (`strong_beat_position?`) is a step below the suspended pitch and consonant with the other voice there, whether attacked on that beat or anticipated and held. The other voice may move meanwhile. If improper, mark the held voice
    - downbeat, both voices attacking: unexplained; mark the attackers
    - any other moment, beat 3 in 4/4 included (and the eighth after a dotted quarter): explained when any attacking voice's note is a figure in its own line, using a `DissonanceFigures` per voice; otherwise mark the attackers
    - The graded voice gets the marks that fall on its notes.
@@ -159,7 +159,7 @@ None.
 
 - `spec/head_music/style/guideline/voice_context_spec.rb` (new): `downbeat_position?` and `strong_beat_position?` in 4/4, 3/2 and 2/2, against a cantus firmus that moves, and against none.
 - Behavior-preserving extractions (steps 3 and 5) are proven by the existing specs for `FloridDissonanceTreatment`, `WeakBeatDissonanceTreatment`, `EmbellishedSuspensionTreatment`, and `MixSpeciesTextures`, plus direct specs of the extracted objects.
-- One spec per new guideline under `spec/head_music/style/guidelines/`, built with `HeadMusic::Notation::ABC.parse`, covering the cases in the acceptance criteria: the five dissonance-ownership cases, the suspension owned by the held voice, a passing tone on beat 3 in 4/4 unmarked; textures (quarters against quarters for three bars marked, quarters against whole notes not); dotted rhythms on and off; the cadence with the leading tone in either voice, in minor, with both voices stepping the same way, and with 5→1; bars as Integer, Range, and endless Range, counted from a staggered entry.
+- One spec per new guideline under `spec/head_music/style/guidelines/`, built with `HeadMusic::Notation::ABC.parse`, covering the cases in the acceptance criteria: the five dissonance-ownership cases, the suspension owned by the held voice, a passing tone on beat 3 in 4/4 unmarked, a downbeat suspension resolving on beat 3 with decoration while the other voice moves, a beat-3 suspension resolving on the next downbeat, a resolution dissonant with the moved voice (marked); textures (quarters against quarters for three bars marked, quarters against whole notes not); dotted rhythms on and off; the cadence with the leading tone in either voice, in minor, with both voices stepping the same way, and with 5→1; bars as Integer, Range, and endless Range, counted from a staggered entry.
 - `spec/head_music/style/guides/free_species_melody_spec.rb`, `free_species_harmony_spec.rb`: membership by tier, and graded passages.
 - `spec/head_music/style/guides/composite_guide_spec.rb`: `#with` routing, the unknown-option error, display name and instruction of a configured composite.
 - `spec/head_music/style/guides/base_spec.rb`: melodic and harmonic guide counts (17 and 8), and an entry in "the harmony guides hold the rules they held" for `free_species_harmony`.
