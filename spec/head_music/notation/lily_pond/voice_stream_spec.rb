@@ -228,12 +228,12 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
 
   describe "#add_graces" do
     let(:grace) do
-      HeadMusic::Notation::LilyPond::GraceReader::Grace.new(
+      HeadMusic::Notation::LilyPond::Graces::Grace.new(
         pitches: [d4], rhythmic_value: HeadMusic::Rudiment::RhythmicValue.get(:sixteenth), slashed: true, tied: false,
         marks: HeadMusic::Notation::LilyPond::MarkReader::NONE
       )
     end
-    let(:graces) { HeadMusic::Notation::LilyPond::GraceReader::Graces.new(graces: [grace], implied_slur: false) }
+    let(:graces) { HeadMusic::Notation::LilyPond::Graces.new(graces: [grace], implied_slur: false) }
 
     it "gives the grace notes to the next note" do
       stream.add_graces(graces)

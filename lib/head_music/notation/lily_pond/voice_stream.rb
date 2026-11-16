@@ -55,7 +55,7 @@ module HeadMusic::Notation::LilyPond
       @role = role
       @events = []
       @pending_note = nil
-      @pending_graces = GraceReader::NONE
+      @pending_graces = Graces::NONE
       @tie_open = false
     end
 
@@ -69,7 +69,7 @@ module HeadMusic::Notation::LilyPond
       return extend_tie(pitches, rhythmic_duration, line, marks) if @tie_open
 
       graces = @pending_graces
-      @pending_graces = GraceReader::NONE
+      @pending_graces = Graces::NONE
       flush_pending_note
       @pending_note = Event.new(
         kind: :note, line: line, pitches: pitches, rhythmic_duration: rhythmic_duration,
@@ -217,7 +217,7 @@ module HeadMusic::Notation::LilyPond
 
     def drop_graces(line)
       step = @pending_graces.last_transposition
-      @pending_graces = GraceReader::NONE
+      @pending_graces = Graces::NONE
       mark(line, kind: :transposition, transposition: step) if step
     end
 
