@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [24.0.0] - 2026-11-16
+
+Free species arrives: `Guide.get("free_species")` grades two voices composed together with no cantus firmus, with the guidelines it needs, and a composite guide can now be configured as a whole. MusicXML and LilyPond keep a part's instruments and their transpositions through a write and a read, the tenor and Irish tenor banjos join the catalog, and the banjo's alternate tunings sound the pitches they name.
+
+**This is a major release**, because LilyPond reads several voices on one `\new Staff` as one part, where it read a part per voice. A consumer reading such staves gets one part with a role for each voice, taken from its `\new Voice` name, and the staff's `instrumentName` as the player's name. Counterpoint graded against a florid cantus firmus may also grade differently, since a downbeat now comes from the meter. Other consumers upgrade by upgrading.
+
 ### Added
 
 - The banjo has a `c_tuning` alternate tuning (gCGBD), the tuning of the classic banjo.
