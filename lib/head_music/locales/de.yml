@@ -495,10 +495,10 @@ de:
       guidelines:
         allow_free_species_rhythmic_values:
           instruction: "In Ganzen, Halben, Vierteln und paarweise schrittweisen Achteln auf leichten Zählzeiten schreiben."
-          instruction_with_dotted_rhythms: "In Ganzen, Halben, Vierteln und paarweise schrittweisen Achteln auf leichten Zählzeiten schreiben; Halbe und Ganze dürfen punktiert sein, und auf eine punktierte Viertel darf ein einzelnes Achtel folgen, das schrittweise weitergeht."
+          instruction_with_dotted_rhythms: "In Ganzen, Halben, Vierteln und paarweise schrittweisen Achteln auf leichten Zählzeiten schreiben; Halbe und Ganze dürfen punktiert sein, und auf eine punktierte Viertel darf eine einzelne Achtel folgen, die schrittweise weitergeht."
           violations:
             default: "Nur Ganze, Halbe, Viertel und paarweise schrittweise Achtel auf leichten Zählzeiten verwenden."
-            with_dotted_rhythms: "Nur Ganze, Halbe, Viertel und paarweise schrittweise Achtel auf leichten Zählzeiten verwenden, dazu punktierte Halbe und Ganze und eine punktierte Viertel mit einem einzelnen, schrittweise weitergehenden Achtel."
+            with_dotted_rhythms: "Nur Ganze, Halbe, Viertel und paarweise schrittweise Achtel auf leichten Zählzeiten verwenden, dazu punktierte Halbe und Ganze und eine punktierte Viertel mit einer einzelnen, schrittweise weitergehenden Achtel."
         allow_fifth_species_rhythmic_values:
           instruction: "In Halben, Vierteln und paarweise schrittweisen Achteln auf leichten Zählzeiten schreiben und die Ganze für den Schlusstakt aufsparen."
           violations:

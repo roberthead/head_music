@@ -476,7 +476,7 @@ it:
       guidelines:
         allow_free_species_rhythmic_values:
           instruction: "Scrivere in semibrevi, minime, semiminime e crome congiunte appaiate sui tempi deboli."
-          instruction_with_dotted_rhythms: "Scrivere in semibrevi, minime, semiminime e crome congiunte appaiate sui tempi deboli; si può puntare una minima o una semibreve, o far seguire a una semiminima puntata una sola croma che proceda per grado congiunto."
+          instruction_with_dotted_rhythms: "Scrivere in semibrevi, minime, semiminime e crome congiunte appaiate sui tempi deboli; una minima o una semibreve può essere puntata, e una semiminima puntata può essere seguita da una sola croma che proceda per grado congiunto."
           violations:
             default: "Usare solo semibrevi, minime, semiminime e crome congiunte appaiate sui tempi deboli."
             with_dotted_rhythms: "Usare solo semibrevi, minime, semiminime e crome congiunte appaiate sui tempi deboli, minime e semibrevi puntate, e una semiminima puntata seguita da una sola croma che proceda per grado congiunto."

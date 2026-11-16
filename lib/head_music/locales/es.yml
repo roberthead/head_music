@@ -478,7 +478,7 @@ es:
       guidelines:
         allow_free_species_rhythmic_values:
           instruction: "Escribir en redondas, blancas, negras y corcheas conjuntas apareadas en tiempos débiles."
-          instruction_with_dotted_rhythms: "Escribir en redondas, blancas, negras y corcheas conjuntas apareadas en tiempos débiles; se puede puntillar una blanca o una redonda, o seguir una negra con puntillo de una sola corchea que avance por grado conjunto."
+          instruction_with_dotted_rhythms: "Escribir en redondas, blancas, negras y corcheas conjuntas apareadas en tiempos débiles; una blanca o una redonda puede llevar puntillo, y una negra con puntillo puede ir seguida de una sola corchea que avance por grado conjunto."
           violations:
             default: "Emplear solo redondas, blancas, negras y corcheas conjuntas apareadas en tiempos débiles."
             with_dotted_rhythms: "Emplear solo redondas, blancas, negras y corcheas conjuntas apareadas en tiempos débiles, blancas y redondas con puntillo, y una negra con puntillo seguida de una sola corchea que avance por grado conjunto."
