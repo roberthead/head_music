@@ -486,6 +486,12 @@ fr:
     # commence donc en minuscule.
     style:
       guidelines:
+        allow_free_species_rhythmic_values:
+          instruction: "Écrire en rondes, blanches, noires et croches conjointes appariées sur les temps faibles."
+          instruction_with_dotted_rhythms: "Écrire en rondes, blanches, noires et croches conjointes appariées sur les temps faibles. Une blanche ou une ronde peut être pointée, et une noire pointée peut être suivie d'une seule croche qui avance par degré conjoint."
+          violations:
+            default: "N'employer que des rondes, des blanches, des noires et des croches conjointes appariées sur les temps faibles."
+            with_dotted_rhythms: "N'employer que des rondes, des blanches, des noires et des croches conjointes appariées sur les temps faibles, des blanches et des rondes pointées, et une noire pointée suivie d'une seule croche qui avance par degré conjoint."
         allow_fifth_species_rhythmic_values:
           instruction: "Écrire en blanches, noires et croches conjointes appariées sur les temps faibles, en réservant la ronde à la mesure finale."
           violations:

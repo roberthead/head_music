@@ -9,12 +9,12 @@ describe HeadMusic::Style::Guides::Base do
   melodic_guides = entries.select { |entry| entry.category == :melody }
   harmonic_guides = entries.select { |entry| entry.category == :harmony }
 
-  it "recognizes sixteen melodic guides" do
-    expect(melodic_guides.length).to eq 16
+  it "recognizes seventeen melodic guides" do
+    expect(melodic_guides.length).to eq 17
   end
 
-  it "recognizes seven harmonic guides" do
-    expect(harmonic_guides.length).to eq 7
+  it "recognizes eight harmonic guides" do
+    expect(harmonic_guides.length).to eq 8
   end
 
   # Guards the explicit registry list against drift when a guide class is added.
@@ -118,6 +118,14 @@ describe HeadMusic::Style::Guides::Base do
       "fifth_species_harmony" => %w[
         ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
         EmbellishedSuspensionTreatment FloridDissonanceTreatment MinimumNotes NoParallelPerfectAcrossBarline
+        NoParallelPerfectOnDownbeats NoParallelPerfectWithSyncopation NoStrongBeatUnisons
+        PreferContraryMotion PreferImperfect SetAgainstAnotherVoice
+      ],
+      # Free species adds its own three rules to the inherited craft, and
+      # BarCount only when a length is configured.
+      "free_species_harmony" => %w[
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ClausulaVera ConsonantDownbeats
+        FreeDissonanceTreatment IndependentTextures MinimumNotes NoParallelPerfectAcrossBarline
         NoParallelPerfectOnDownbeats NoParallelPerfectWithSyncopation NoStrongBeatUnisons
         PreferContraryMotion PreferImperfect SetAgainstAnotherVoice
       ]

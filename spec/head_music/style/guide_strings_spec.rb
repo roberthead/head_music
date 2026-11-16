@@ -144,8 +144,8 @@ describe HeadMusic::Style::Guide do
   # A canary: meant to fail when a guide or item is added, so the addition
   # gets swept. Update the numbers; do not loosen them.
   it "covers every registry entry" do
-    expect(guides.size).to eq 30
-    expect(items.size).to eq 70
+    expect(guides.size).to eq 33
+    expect(items.size).to eq 74
   end
 
   # display_name, not name: the name methods return Ruby class names. Shared

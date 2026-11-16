@@ -42,11 +42,11 @@ describe HeadMusic::Style::Guide do
     [own, others]
   end
 
-  # first_three_species is a union of species rather than one, so it has no
-  # diagonal to sit on.
+  # first_three_species is a union of species rather than one, and free_species
+  # sets no cantus firmus, so neither has a diagonal to sit on.
   it "has a fixture for every species composite" do
     expect(fixtures_by_species.keys.sort)
-      .to eq((described_class::COMPOSITE_MEMBERS.keys - ["first_three_species"]).sort)
+      .to eq((described_class::COMPOSITE_MEMBERS.keys - %w[first_three_species free_species]).sort)
   end
 
   fixtures_by_species.each_key do |species|

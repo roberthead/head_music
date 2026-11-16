@@ -90,7 +90,7 @@ describe HeadMusic::Style::Guide do
 
   describe ".all" do
     it "enumerates every registered guide" do
-      expect(described_class.all.length).to eq 30
+      expect(described_class.all.length).to eq 33
     end
 
     it "registers each guide once" do
@@ -240,6 +240,9 @@ describe HeadMusic::Style::Guide do
         fourth_species
         fourth_species_harmony
         fourth_species_melody
+        free_species
+        free_species_harmony
+        free_species_melody
         fux_cantus_firmus
         salzer_schachter_cantus_firmus
         second_species
@@ -261,8 +264,8 @@ describe HeadMusic::Style::Guide do
       expect(described_class.keys).to match_array published_keys
     end
 
-    it "returns thirty unique keys" do
-      expect(described_class.keys.uniq.length).to eq 30
+    it "returns thirty-three unique keys" do
+      expect(described_class.keys.uniq.length).to eq 33
     end
 
     it "returns strings, since keys cross the storage boundary" do

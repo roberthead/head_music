@@ -389,6 +389,8 @@ require "head_music/style/guides/first_three_species_melody"
 require "head_music/style/guides/first_three_species_harmony"
 require "head_music/style/guides/fifth_species_melody"
 require "head_music/style/guides/fifth_species_harmony"
+require "head_music/style/guides/free_species_melody"
+require "head_music/style/guides/free_species_harmony"
 
 # The guide registry names every guide constant at load time, so it must come last.
 require "head_music/style/guide"

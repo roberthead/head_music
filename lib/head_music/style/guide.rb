@@ -22,7 +22,9 @@ class HeadMusic::Style::Guide
     HeadMusic::Style::Guides::FirstThreeSpeciesMelody,
     HeadMusic::Style::Guides::FirstThreeSpeciesHarmony,
     HeadMusic::Style::Guides::FifthSpeciesMelody,
-    HeadMusic::Style::Guides::FifthSpeciesHarmony
+    HeadMusic::Style::Guides::FifthSpeciesHarmony,
+    HeadMusic::Style::Guides::FreeSpeciesMelody,
+    HeadMusic::Style::Guides::FreeSpeciesHarmony
   ].freeze
 
   # Why the registry is an explicit list: no inherited hook or constant scan
@@ -51,7 +53,8 @@ class HeadMusic::Style::Guide
     "third_species_triple_meter" => %w[third_species_triple_meter_melody third_species_triple_meter_harmony],
     "fourth_species" => %w[fourth_species_melody fourth_species_harmony],
     "fifth_species" => %w[fifth_species_melody fifth_species_harmony],
-    "first_three_species" => %w[first_three_species_melody first_three_species_harmony]
+    "first_three_species" => %w[first_three_species_melody first_three_species_harmony],
+    "free_species" => %w[free_species_melody free_species_harmony]
   }.freeze
 
   # Two passes, because a composite names entries the first pass built. Merged

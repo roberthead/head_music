@@ -9,8 +9,16 @@ module HeadMusic::Style::Guidelines; end
 class HeadMusic::Style::Guidelines::AllowFreeSpeciesRhythmicValues < HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues
   TIE_EQUIVALENT_DOTTED_UNIT_NAMES = %w[half whole].freeze
 
+  DOTTED_VIOLATION_KEY = "guidelines.allow_free_species_rhythmic_values.violations.with_dotted_rhythms"
+
   def self.violation_key(config = {})
-    config[:dotted_rhythms] ? "guidelines.#{template_key}.violations.with_dotted_rhythms" : super
+    config[:dotted_rhythms] ? DOTTED_VIOLATION_KEY : super
+  end
+
+  # Both, whichever the configuration names, so load-time verification renders
+  # the dotted sentence though the registry holds only the plain guide.
+  def self.violation_keys(config = {})
+    [*super({}), DOTTED_VIOLATION_KEY]
   end
 
   def self.render_instruction(config)

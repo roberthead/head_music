@@ -1059,6 +1059,8 @@ en:
         # "first_species" to "First Species" without help.
         fifth_species:
           instruction: "Write florid counterpoint against the cantus firmus, mixing note values and ties as the line requires and treating every dissonance as its figure demands."
+        free_species:
+          instruction: "Compose two voices together in the techniques of the species. No cantus firmus is given: where species counterpoint sets a line against a fixed song, here you write both lines, mixing note values freely and treating every dissonance between them as its figure demands. (\"Free species\" is this guide's own name.)"
         first_species:
           instruction: "Write one whole note against each note of the cantus firmus, consonant with it and moving mostly in contrary motion."
         first_three_species:
@@ -1115,6 +1117,10 @@ en:
           instruction: "Write florid counterpoint: mix note values and ties as the line requires."
         fifth_species_harmony:
           instruction: "Write florid counterpoint against the cantus firmus, treating every dissonance as its figure demands."
+        free_species_melody:
+          instruction: "Write each line in the species' note values, any of them in any bar, closing by step on the tonic."
+        free_species_harmony:
+          instruction: "Write two lines together with no cantus firmus, explaining every dissonance between them, keeping their textures apart, and closing with the clausula vera."
         arch_contour_melody:
           instruction: "Write a melody that rises to a single peak and falls back."
         ascending_contour_melody:
