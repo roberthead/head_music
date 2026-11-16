@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-15T16:00:12-05:00
   planned_at:   2026-11-15T19:54:14-05:00
   finished_at:
-  updated_at:   2026-11-16T14:56:25-05:00
+  updated_at:   2026-11-16T15:31:00-05:00
 -->
 
 # Story: Free Species Guide
@@ -179,3 +179,54 @@ None.
 - **Figure detection on the other voice.** `DissonanceFigures` for the companion line uses the same symmetric dissonance test, but the cambiata and double neighbor check consonance of surrounding notes against "the cantus"; with two moving voices that means against whatever the graded voice sounds at those positions. Pin this with a spec.
 - **Double marking at downbeats.** A downbeat dissonance is marked by both `ConsonantDownbeats` (secondary) and `FreeDissonanceTreatment` (primary), as in fifth species today with `FloridDissonanceTreatment`. Accepted precedent, not new.
 - **Load order.** `Guide` builds the registry at require time, and `CompositeGuide` must not read the registry while it is being built (see its comments). `#with` must respect that.
+
+## Review
+
+Reviewed 2026-11-16 at `7737eabf`. Suite: 19,249 examples, 0 failures (`rake spec:without_coverage`); rubocop clean; tree clean.
+
+### Acceptance criteria
+
+| Area | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| The guide | Registered composite `free_species` | ✅ | `lib/head_music/style/guide.rb:26-27,57`; `composite_guide_spec.rb` |
+| The guide | Grades either voice, no `cantus_firmus?` | ✅ | `guideline/voice_context.rb:18`; `free_species_harmony_spec.rb:54-57`, `free_species_melody_spec.rb:32-33` |
+| The guide | English and British strings; others fall back | ⚠️ | `en.yml:1067` says no cantus firmus is given. en_GB now has `free_dissonance_treatment` (finding 1, resolved). The note-value strings were also translated into de, es, fr, it, ru rather than left to fall back |
+| The guide | `CompositeGuide#with` routes, raises, keeps name, nil key | ✅ | `guides/composite_guide.rb:78-86,143`; `composite_guide_spec.rb:153-198` |
+| The guide | Nothing disqualifies; tiers with reasons | ✅ | `guides/free_species_harmony.rb:3-28`, `guides/free_species_melody.rb:3-26`; their specs |
+| The guide | CHANGELOG under Unreleased | ✅ | `CHANGELOG.md:14-21,25` |
+| Meter | `downbeat_position?` from the meter | ✅ | `voice_context.rb:29-31`; `voice_context_spec.rb` |
+| Meter | `strong_beat_position?` via `Position#strong?` | ✅ | `voice_context.rb:33-35`; `voice_context_spec.rb` |
+| Meter | Motions and next downbeat from the meter | ✅ | `harmonic_context.rb:16`, `no_parallel_perfect_across_barline.rb` |
+| Meter | The ten dependent guidelines follow | ✅ | All read through the shared contexts; `cantus_firmus_positions` removed |
+| Meter | Suspension rules stay on the cantus firmus | ✅ | `embellished_suspension_treatment.rb` only swaps in the shared next-strong-beat helper |
+| Meter | No species grade of a counterpoint voice changes | ✅ | Species specs untouched and passing |
+| Meter | Snapshot changes only in permitted rows | ✅ | 528 rows added (3 guides × 176 entries); 192 changed, all `-v0` cantus firmus rows against florid lines; no `v1` or synthetic row changed |
+| Dissonance | Fifth-species rule, suspensions, loosened deadline | ✅ | `free_dissonance_treatment.rb:38-80`; `free_dissonance_treatment_spec.rb` |
+| Dissonance | Either voice explains; else both marked | ✅ | `free_dissonance_treatment.rb:38-47`; spec "neither voice explains" |
+| Dissonance | Figures run consonance to consonance, free species only | ✅ | `consonant_run?` at `free_dissonance_treatment.rb:101`; `DissonanceFigures` stays shape-only |
+| Dissonance | The seven pinned cases | ✅ | `free_dissonance_treatment_spec.rb` |
+| Motion | Two-part craft carries over | ✅ | `INHERITED_HARMONIC_CRAFT` in the secondary tier |
+| Motion | Beat-to-beat parallels | ✅ | `NoParallelPerfectWithSyncopation`; `free_species_harmony_spec.rb:72-75` |
+| Motion | Direct motion between downbeats only | ✅ | Reads `motions` |
+| Rhythm | Note values and `dotted_rhythms:` | ✅ | `allow_free_species_rhythmic_values.rb:36,56,71`, `free_dissonance_treatment.rb:115`; their specs |
+| Rhythm | No `MixSpeciesTextures` per voice | ✅ | `free_species_melody_spec.rb:19` |
+| Rhythm | `IndependentTextures` reusing bar texture | ✅ | `independent_textures.rb:31-37`, `guideline/bar_texture.rb`; `independent_textures_spec.rb` |
+| Rhythm | Staggered entry allowed | ✅ | `free_species_harmony_spec.rb:97-100` |
+| Cadence | `StepToFinalNote`, end on tonic | ✅ | `free_species_melody.rb`; `free_species_melody_spec.rb:14,40` |
+| Cadence | `ClausulaVera` primary, either voice | ✅ | `clausula_vera_spec.rb` |
+| Cadence | Half step; Phrygian 7→1 whole step against 2→1 half step | ✅ | `clausula_vera.rb` `approach_interval_contracts_by_half_step?`; `clausula_vera_spec.rb` Phrygian and minor tenth contexts (finding 2, resolved) |
+| Cadence | `.with(forms:)` | ✅ | `clausula_vera.rb:265-272`; spec |
+| Length | `BarCount`, Integer and every Range, staggered entry, fitness | ✅ | `bar_count.rb:79,83,96`; `bar_count_spec.rb:26-79` |
+| Length | Secondary; `bars:` changes no other weight | ✅ | `free_species_harmony_spec.rb:37-47,108-111` |
+| Verification | Four new guidelines leave Fux's fifth species unmarked | ✅ | `free_species_harmony_corpus_spec.rb`; no exclusion is needed now that 85b passes |
+| Verification | Written faults graded | ✅ | `free_species_harmony_spec.rb:63-91` |
+
+### Findings
+
+1. **Resolved: en_GB spells "neighbor" in the free dissonance strings.** Fixed by adding the en_GB entry. `en.yml:896-900` has no en_GB counterpart, so British English reads "neighbor tone… double neighbor" while `florid_dissonance_treatment` reads "neighbour" (`en_GB.yml:129-149`). Outside the criterion's note-value scope, but against the en_GB file's own convention (`en_GB.yml:89`). Small fix: add the entry.
+2. **Resolved: `ClausulaVera` does not check the falling 2→1 step's size in Phrygian.** It now requires a minor third (or tenth), or a major sixth (or thirteenth), just before the octave or unison, in every mode. `lower_approach_half_step?` (`clausula_vera.rb:96-99`) measures only the rising voice. In E Phrygian, F♯→E against D→E passes as a clausula vera. `Diatonic` still marks the F♯, so the grade drops, but not from the cadence rule the criterion names.
+3. **Low: a figure's stepwise run can cross a rest.** `consonant_run?` reads `voice.notes`, so `c z d e` explains the dissonant D as a passing tone. `NoRestsAfterNote` in the melody guide marks the rest, so this is mostly covered.
+
+Observation, not a defect: with meter-based downbeats, a perfect fifth tied over a barline in both voices is marked as parallel fifths on downbeats, as a re-struck fifth already is. Only free species can produce it.
+
+Nothing blocks `finish`. Findings 1 and 2 are resolved.
