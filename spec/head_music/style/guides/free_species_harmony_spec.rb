@@ -94,6 +94,16 @@ describe HeadMusic::Style::Guides::FreeSpeciesHarmony do
     end
   end
 
+  context "with a staggered entry under the whole guide" do
+    let(:flow) { flow_for("z2 a2|f2 g a|b2 a2|g f e2|f2 e2|^c4|d4|]", "D4|D2 E2|D2 F2|G2 A2|D4|E4|D4|]") }
+
+    it "marks nothing for the voice entering late" do
+      marks = HeadMusic::Style::Guide.get!("free_species").assess(flow.voices.first).guide_item_assessments.flat_map(&:marks)
+
+      expect(marks.map(&:start_position)).to all(be >= HeadMusic::Content::Position.new(flow, "2:1"))
+    end
+  end
+
   # How a limit is written must not change what anything else weighs.
   context "with a length limit and a dissonance fault" do
     let(:flow) { flow_for("a4|g4|f2 e2|f2 g2|a2 g2|f2 e2|^c4|d4|]", "D4|A,4|D4|D4|C4|D4|E4|D4|]") }
