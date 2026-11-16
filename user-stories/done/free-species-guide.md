@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-11-15T14:57:30-05:00
   activated_at: 2026-11-15T16:00:12-05:00
   planned_at:   2026-11-15T19:54:14-05:00
-  finished_at:
-  updated_at:   2026-11-16T15:44:00-05:00
+  finished_at:  2026-11-16T15:53:46-05:00
+  updated_at:   2026-11-16T15:53:46-05:00
 -->
 
 # Story: Free Species Guide
@@ -230,3 +230,25 @@ Reviewed 2026-11-16 at `7737eabf`. Suite: 19,249 examples, 0 failures (`rake spe
 Observation, not a defect: with meter-based downbeats, a perfect fifth tied over a barline in both voices is marked as parallel fifths on downbeats, as a re-struck fifth already is. Only free species can produce it.
 
 Nothing blocks `finish`. All three findings are resolved.
+
+## Learnings
+
+### What went well
+
+- Moving downbeats onto the meter first, with the untouched species suite as the proof, kept the shared change honest. The snapshot diff could be checked row by row: 192 changed rows, every one a cantus firmus against a florid line, as the criterion predicted.
+- Extracting `DissonanceFigures` and `BarTexture` before building on them meant the free species rules reused the species logic, and the existing specs proved the extractions changed nothing.
+- Fux's fifth-species examples made a good acceptance corpus for the new guidelines. They pushed the suspension rule looser (re-struck suspensions, a deadline one strong beat later), and figure 85b stopped needing an exclusion.
+- Planning review caught real rule gaps before any code existed: consonant ends for passing figures, one secondary `BarCount` so a limit's wording can't change other weights, and a nil key for a configured composite.
+
+### What was surprising
+
+- Shape alone doesn't explain a dissonance once both voices move. Parallel sevenths stepping through weak beats look like passing tones in each line, which is why figures had to run from consonance to consonance.
+- The clausula vera is best checked as a harmonic interval, not by the size of each melodic step. A minor third or a major sixth before the octave or unison holds the half step in whichever voice the mode puts it, and that one test covers Phrygian with no special case.
+- `voice.notes` drops rests, so any line-walking rule silently steps through silence unless it splits the notes into phrases first.
+- Translating the new note-value strings, which the plan had deferred, needed grammar checks (German gender, Spanish and Italian verbs for dotting) that a word list alone wouldn't catch.
+
+### What to do differently next time
+
+- For a cadence or figure rule, write the specs from the voice the mode or figure singles out (Phrygian's 2→1, a rest inside a run), not only from the common case. Both late findings were exactly those.
+- When a guideline walks a line, decide at the start how it treats rests and ties, and pin each with a spec.
+- Settle a locale-scope criterion before implementing. "Fall back to English" in the story and translations in the branch had to be reconciled in review.
