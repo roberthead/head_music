@@ -228,7 +228,7 @@ DEPENDENCIES
   rspec-its (~> 2.0)
   rubocop-rake
   rubocop-rspec
-  rubycritic
+  rubycritic (>= 5.0)
   simplecov (< 1.1)
   standard
   yard (~> 0.9, >= 0)
