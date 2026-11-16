@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-15T16:00:12-05:00
   planned_at:   2026-11-15T19:54:14-05:00
   finished_at:
-  updated_at:   2026-11-16T09:14:43-05:00
+  updated_at:   2026-11-16T09:39:03-05:00
 -->
 
 # Story: Free Species Guide
@@ -42,7 +42,8 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 
 - Dissonance follows fifth species: only the downbeat forbids an attacked dissonance, and beat 3 in 4/4 takes a passing tone as fifth species allows (Fux figures 82, 86a and 88a do). A dissonance attacked on the downbeat is a fault. A dissonance held into a strong beat (the downbeat, or beat 3 in 4/4) is a suspension: prepared as a consonance, and resolved by the note the suspended voice sounds on the next strong beat, a step down and consonant with whatever the other voice sounds then. The notes between may decorate the resolution, as fifth species allows, and are judged by the rule for attacked dissonance. Any other attacked dissonance must be a passing tone, neighbor tone, nota cambiata, or double neighbor. The existing `DissonanceFigureDetection` is reused, not copied
 - **Either voice can explain a dissonance.** A dissonance is properly treated when at least one voice that attacks into it does so as a recognized figure, or when it is a suspension in the held voice. When no voice explains it, every voice that attacked into it is marked, so the fault counts in both voices' grades
-- Specs pin: one voice moving against a held note; a suspension (the held voice owns it; the moving voice is not marked); simultaneous dissonant passing tones in both voices (no mark; Salzer & Schachter p. 330 list "dissonant passing tones in both species parts" as a basic situation); a leap into a chord tone against a passing tone in the other voice (no mark); a simultaneous dissonance neither voice explains (both marked)
+- **A passing or neighbor figure runs from consonance to consonance.** Its stepwise run may hold several dissonant notes in a row, but the notes that begin and end it must be consonant with whatever the other voice sounds at those moments. Shape alone does not explain a dissonance, so two lines stepping in parallel sevenths are marked. Free species only: the species guidelines keep judging figures by shape, since a held cantus firmus already makes the ends consonant there
+- Specs pin: one voice moving against a held note; a suspension (the held voice owns it; the moving voice is not marked); simultaneous dissonant passing tones in both voices (no mark; Salzer & Schachter p. 330 list "dissonant passing tones in both species parts" as a basic situation); a leap into a chord tone against a passing tone in the other voice (no mark); a simultaneous dissonance neither voice explains (both marked); two dissonant passing tones in a row between consonances (no mark); parallel sevenths stepping through weak beats with no consonant end (marked)
 
 ### Motion
 
@@ -100,6 +101,7 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 6. Strings follow the English-first precedent; translations are their own story.
 7. Fux's fifth-species examples are the corpus for the new guidelines only; the inherited craft already marks some of Fux's lines under `fifth_species` (revised in planning review).
 8. Hidden octaves and fifths between beats are not checked, matching fifth species.
+9. A passing or neighbor figure explains a dissonance only when its stepwise run begins and ends on consonances against the other voice (planning review).
 
 ### Scope
 
@@ -136,7 +138,7 @@ First move metric strength onto the meter in the shared contexts, with the speci
 4. **`FreeDissonanceTreatment`** (new, primary in the harmony guide). At each moment the two voices form a dissonance:
    - a strong beat (downbeat or beat 3) with a voice held over: that voice owns it as a suspension. Prepared: consonant where it was attacked. Resolved: the note it sounds on the next strong beat (`strong_beat_position?`) is a step below the suspended pitch and consonant with the other voice there, whether attacked on that beat or anticipated and held. The other voice may move meanwhile. If improper, mark the held voice
    - downbeat, both voices attacking: unexplained; mark the attackers
-   - any other moment, beat 3 in 4/4 included (and the eighth after a dotted quarter): explained when any attacking voice's note is a figure in its own line, using a `DissonanceFigures` per voice; otherwise mark the attackers
+   - any other moment, beat 3 in 4/4 included (and the eighth after a dotted quarter): explained when any attacking voice's note is a figure in its own line, using a `DissonanceFigures` per voice; otherwise mark the attackers. For passing and neighbor tones, walk the stepwise run out from the note in both directions to the nearest notes consonant with the other voice; the figure holds only when those ends exist, the run between them keeps one direction (passing) or returns to its starting pitch (neighbor), and every step is a step. This check belongs to `FreeDissonanceTreatment`, not `DissonanceFigures`, so the species guidelines are unchanged
    - The graded voice gets the marks that fall on its notes.
 5. **`IndependentTextures`** (new, primary). Extract the bar-texture classification from `guidelines/mix_species_textures.rb` into a reusable object taking a voice (`MixSpeciesTextures` keeps its behavior through it). The new guideline marks runs of more than `maximum_run:` (default 2) bars where both voices share a single-species texture.
 6. **`AllowFreeSpeciesRhythmicValues`** (new subclass of `AllowFifthSpeciesRhythmicValues`, primary in the melody guide): no whole-note restriction; with `dotted_rhythms: true`, no mark for a dotted note whose tied spelling would pass, and no unpaired-eighth mark for an eighth after a dotted quarter that steps to the next note. That eighth still counts toward the bar's eighth-note limit.
