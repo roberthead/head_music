@@ -7,10 +7,12 @@ module HeadMusic::Style::Guidelines; end
 # carry either. Salzer and Schachter require both in the next-to-last
 # measure of two-part writing (p. 20).
 #
-# The lower approach is a half step: raised in Dorian, Mixolydian, Aeolian,
-# and minor, as written in Ionian, Lydian, and major. Phrygian is the
-# exception, its seventh rising a whole step while the other voice falls the
-# half step from the second degree.
+# One approach is a half step and the other a whole step, so the voices
+# sound a minor third (or tenth) before the final, or a major sixth (or
+# thirteenth) when the rising voice is above. The seventh is raised in
+# Dorian, Mixolydian, Aeolian, and minor, and stands as written in Ionian,
+# Lydian, and major. Phrygian is the exception: its seventh rises a whole
+# step while the second degree falls the half step.
 class HeadMusic::Style::Guidelines::ClausulaVera < HeadMusic::Style::Guideline
   FORMS = %i[clausula_vera].freeze
   UNRAISED_VIOLATION_KEY = "guidelines.clausula_vera.violations.unraised"
@@ -42,7 +44,7 @@ class HeadMusic::Style::Guidelines::ClausulaVera < HeadMusic::Style::Guideline
   # Two ways to fail: no clausula vera at all, or one whose leading tone was
   # left unraised.
   def violation_key
-    return self.class.violation_key unless gradable? && shaped_like_clausula_vera? && !lower_approach_half_step?
+    return self.class.violation_key unless gradable? && shaped_like_clausula_vera? && leading_tone_unraised?
 
     UNRAISED_VIOLATION_KEY
   end
@@ -62,7 +64,7 @@ class HeadMusic::Style::Guidelines::ClausulaVera < HeadMusic::Style::Guideline
   end
 
   def clausula_vera?
-    shaped_like_clausula_vera? && lower_approach_half_step?
+    shaped_like_clausula_vera? && approach_interval_contracts_by_half_step?
   end
 
   def shaped_like_clausula_vera?
@@ -93,10 +95,30 @@ class HeadMusic::Style::Guidelines::ClausulaVera < HeadMusic::Style::Guideline
       scale_degree(falling_pair.first) == 2
   end
 
-  def lower_approach_half_step?
-    rising_pair = approaches.detect { |approach, final| final.pitch > approach.pitch }
-    semitones = rising_pair.last.pitch.to_i - rising_pair.first.pitch.to_i
-    semitones == ((mode == :phrygian) ? 2 : 1)
+  def approach_interval_contracts_by_half_step?
+    interval = HeadMusic::Analysis::DiatonicInterval.new(rising_note.pitch, falling_note.pitch)
+    if rising_note.pitch < falling_note.pitch
+      interval.minor? && interval.simple_number == 3
+    else
+      interval.major? && interval.simple_number == 6
+    end
+  end
+
+  def leading_tone_unraised?
+    approach, final = rising_pair
+    mode != :phrygian && final.pitch.to_i - approach.pitch.to_i == 2
+  end
+
+  def rising_pair
+    approaches.detect { |approach, final| final.pitch > approach.pitch }
+  end
+
+  def rising_note
+    rising_pair.first
+  end
+
+  def falling_note
+    approaches.detect { |approach, final| final.pitch < approach.pitch }.first
   end
 
   def approaches

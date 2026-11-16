@@ -68,6 +68,24 @@ describe HeadMusic::Style::Guidelines::ClausulaVera do
     end
   end
 
+  context "with a raised second degree in Phrygian, both voices stepping a whole step" do
+    let(:flow) { flow_for(upper: "a4|^f4|e4|]", lower: "A,4|D4|E4|]", key: "Ephr") }
+
+    it "marks the cadence in both voices" do
+      expect(assessments(flow).map(&:adherent?)).to eq [false, false]
+    end
+
+    it "names the minor third or major sixth" do
+      expect(assessments(flow).first.message).to include("a minor third or major sixth apart")
+    end
+  end
+
+  context "with the voices a minor tenth apart before the final" do
+    let(:flow) { flow_for(upper: "a4|e'4|d'4|]", lower: "A,4|^C4|D4|]") }
+
+    it_behaves_like "a clausula vera"
+  end
+
   context "with a minor key" do
     let(:flow) { flow_for(upper: "c4|^c4|d4|]", lower: "F4|E4|D4|]", key: "Dm") }
 

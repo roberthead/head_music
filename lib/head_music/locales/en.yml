@@ -833,7 +833,7 @@ en:
           name: "Clausula vera"
           instruction: "Close on the tonic in an octave or unison, one voice stepping up from the leading tone as the other steps down from the second degree."
           violations:
-            default: "Close with the clausula vera: the leading tone and the second degree, sounding together, stepping in contrary motion to the tonic in an octave or unison."
+            default: "Close with the clausula vera: the leading tone and the second degree, a minor third or major sixth apart, stepping in contrary motion to the tonic in an octave or unison."
             unraised: "Raise the leading tone so it rises a half step into the final."
         consonant_climax:
           name: "Single consonant climax"

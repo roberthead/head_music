@@ -19,7 +19,7 @@ GUIDE_ITEM_STRINGS = [
   ["ApproachPerfectionContrarily", {}, "Approach perfect consonances by contrary motion."],
   ["AvoidCrossingVoices", {}, "Avoid crossing voices. Maintain the high-low relationship between voices."],
   ["AvoidOverlappingVoices", {}, "Avoid overlapping voices. Maintain the high-low relationship between voices even for adjacent notes."],
-  ["ClausulaVera", {}, "Close with the clausula vera: the leading tone and the second degree, sounding together, stepping in contrary motion to the tonic in an octave or unison."],
+  ["ClausulaVera", {}, "Close with the clausula vera: the leading tone and the second degree, a minor third or major sixth apart, stepping in contrary motion to the tonic in an octave or unison."],
   ["ConsonantClimax", {}, "Peak once, or twice with a step between."],
   ["ConsonantDownbeats", {}, "Use consonant harmonic intervals on every downbeat (unless a tied suspension)."],
   ["ConsonantDownbeats", {restruck_suspensions: true}, "Use consonant harmonic intervals on every downbeat (unless a suspension, tied or struck again)."],
