@@ -2,8 +2,9 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline.
-# Dissonant downbeats are permitted only when the counterpoint note is a
-# properly tied-over suspension (i.e., it began before the current CF note).
+# Dissonant downbeats are permitted only as suspensions: a note held over
+# the barline in either voice. Whether it is prepared and resolved is the
+# suspension rule's to judge.
 class HeadMusic::Style::Guidelines::ConsonantDownbeats < HeadMusic::Style::Guideline
   def marks
     dissonant_pairs.map do |dissonant_pair|
@@ -26,9 +27,6 @@ class HeadMusic::Style::Guidelines::ConsonantDownbeats < HeadMusic::Style::Guide
   end
 
   def tied_suspension?(interval)
-    cp_note = voice.note_at(interval.position)
-    return false unless cp_note
-
-    cp_note.position < interval.position
+    interval.notes.any? { |note| note.position < interval.position }
   end
 end

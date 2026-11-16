@@ -64,4 +64,44 @@ describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
       expect(analyzer.send(:tied_suspension?, interval)).to be false
     end
   end
+
+  context "with two composed voices and a suspension held in the other voice" do
+    subject { assess(described_class, flow.voices.last) }
+
+    let(:flow) do
+      HeadMusic::Notation::ABC.parse(<<~ABC)
+        X:1
+        M:4/4
+        L:1/4
+        K:Ddor
+        V:upper
+        a2 g2-|g2 f2|]
+        V:lower
+        d4|A4|]
+      ABC
+    end
+
+    it { is_expected.to be_adherent }
+  end
+
+  context "with two composed voices and a downbeat dissonance both voices attack" do
+    subject(:assessment) { assess(described_class, flow.voices.last) }
+
+    let(:flow) do
+      HeadMusic::Notation::ABC.parse(<<~ABC)
+        X:1
+        M:4/4
+        L:1/4
+        K:Ddor
+        V:upper
+        a2 f2|g4|]
+        V:lower
+        d4|A4|]
+      ABC
+    end
+
+    it "marks both notes" do
+      expect(assessment.marks.map(&:code)).to eq ["2:1:000 to 3:1:000"]
+    end
+  end
 end
