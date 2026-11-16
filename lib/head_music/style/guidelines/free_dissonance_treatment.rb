@@ -97,9 +97,9 @@ class HeadMusic::Style::Guidelines::FreeDissonanceTreatment < HeadMusic::Style::
   # A passing or neighbor figure: the stepwise run through the note, out to
   # the nearest notes consonant with the other voice in both directions,
   # moving in one direction (passing) or returning to its starting pitch
-  # (neighbor).
+  # (neighbor). A rest breaks the run.
   def consonant_run?(note)
-    line_notes = note.voice.notes
+    line_notes = unbroken_notes_around(note)
     index = line_notes.index(note)
     first = (0...index).reverse_each.detect { |i| consonant_note?(line_notes[i]) }
     last = ((index + 1)...line_notes.length).detect { |i| consonant_note?(line_notes[i]) }
@@ -110,6 +110,11 @@ class HeadMusic::Style::Guidelines::FreeDissonanceTreatment < HeadMusic::Style::
     return false unless intervals.all?(&:step?)
 
     intervals.map(&:direction).uniq.one? || run.first.pitch == run.last.pitch
+  end
+
+  def unbroken_notes_around(note)
+    phrases = note.voice.notes.slice_when { |earlier, later| earlier.next_position < later.position }
+    phrases.detect { |phrase| phrase.include?(note) }
   end
 
   def after_dotted_quarter?(note)

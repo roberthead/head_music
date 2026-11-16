@@ -154,6 +154,15 @@ describe HeadMusic::Style::Guidelines::FreeDissonanceTreatment do
     end
   end
 
+  context "with a dissonance entered after a rest, stepping on to a consonance" do
+    let(:upper) { "c z d e|c4|]" }
+    let(:lower) { "C4|C4|]" }
+
+    it "marks the dissonance, since the rest breaks the passing figure" do
+      expect(marks_in(upper_voice)).to eq ["1:3:000 to 1:4:000"]
+    end
+  end
+
   context "with a downbeat suspension decorated before resolving on beat 3 while the other voice moves" do
     let(:upper) { "e2 g2-|g a f2|e4|]" }
     let(:lower) { "C4|A,2 D2|C4|]" }
