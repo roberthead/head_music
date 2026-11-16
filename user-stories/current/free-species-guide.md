@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-15T16:00:12-05:00
   planned_at:   2026-11-15T19:54:14-05:00
   finished_at:
-  updated_at:   2026-11-15T20:05:00-05:00
+  updated_at:   2026-11-15T21:09:48-05:00
 -->
 
 # Story: Free Species Guide
@@ -31,15 +31,16 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 ### Metric strength from the meter (shared change)
 
 - `VoiceContext#downbeat_position?` means the first beat of the bar, read from the meter, not "the cantus firmus attacks here"
-- A new `strong_beat_position?` uses `Content::Position#strong?`, so beats 1 and 3 in 4/4 are strong
+- A new `strong_beat_position?` uses `Content::Position#strong?`, so beats 1 and 3 in 4/4 are strong. It locates where a suspension resolves, not where dissonance is forbidden
 - `HarmonicContext#motions` is measured between downbeats, not between cantus firmus attacks; `NoParallelPerfectAcrossBarline` finds the next downbeat from the meter
 - The guidelines that read beats through `downbeat_position?` follow the meter with it: `FloridDissonanceTreatment`, `WeakBeatDissonanceTreatment`, `SecondSpeciesBreak`, and `NoParallelPerfectAcrossBarline` (whose next downbeat also comes from the meter)
 - The species suspension rules (`SuspensionTreatment`, `EmbellishedSuspensionTreatment`) keep reading the cantus firmus. Free species judges suspensions with its own dissonance guideline, so moving them would add species risk for no gain
-- No species grade changes. A species cantus firmus attacks once per bar, on beat one, so the existing species specs pass unchanged and prove it. A spec that fails here is a finding to report, not a spec to update
+- No species grade of a counterpoint voice changes. A species cantus firmus attacks once per bar, on beat one, so the existing species specs pass unchanged and prove it. A spec that fails here is a finding to report, not a spec to update
+- The pinned corpus snapshot (`spec/fixtures/style/corpus_fitness.json`) is expected to change only in rows where a harmony guide grades a cantus firmus against a florid line, or the synthetic corpus entries: there the companion is the moving line, so "downbeat" used to mean its every attack. Those rows are regenerated and the diff reviewed before committing; any changed row grading a counterpoint voice stops the work
 
 ### Dissonance
 
-- Strong-beat dissonance must be a prepared suspension that resolves down by step, either directly or with the decorated resolutions fifth species allows (`EmbellishedSuspensionTreatment`: the resolution arrives by the next strong beat). Weak-beat dissonance must be a passing tone, neighbor tone, nota cambiata, or double neighbor. The existing `DissonanceFigureDetection` is reused, not copied
+- Dissonance follows fifth species: only the downbeat forbids an attacked dissonance, and beat 3 in 4/4 takes a passing tone as fifth species allows (Fux figures 82, 86a and 88a do). Downbeat dissonance must be a prepared suspension that resolves down by step, either directly or with the decorated resolutions fifth species allows (`EmbellishedSuspensionTreatment`: the resolution arrives by the next strong beat). Weak-beat dissonance must be a passing tone, neighbor tone, nota cambiata, or double neighbor. The existing `DissonanceFigureDetection` is reused, not copied
 - **Either voice can explain a dissonance.** A dissonance is properly treated when at least one voice that attacks into it does so as a recognized figure, or when it is a suspension in the held voice. When no voice explains it, every voice that attacked into it is marked, so the fault counts in both voices' grades
 - Specs pin: one voice moving against a held note; a suspension (the held voice owns it; the moving voice is not marked); simultaneous dissonant passing tones in both voices (no mark; Salzer & Schachter p. 330 list "dissonant passing tones in both species parts" as a basic situation); a leap into a chord tone against a passing tone in the other voice (no mark); a simultaneous dissonance neither voice explains (both marked)
 
@@ -73,14 +74,14 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 
 ### Verification
 
-- Fux's fifth-species examples grade cleanly in both voices under `free_species`: a fifth-species exercise is valid free species, with the cantus firmus as a voice that keeps to whole notes. A corpus spec checks every example, and any exception is excluded by name with its reason, never by loosening the comparison
-- Specs grade written faults with the expected marks: an unprepared strong-beat dissonance, beat-to-beat parallel fifths, both voices in quarters for three bars, a cadence with both voices stepping the same way
+- The free species guidelines accept Fux's fifth species: on every Fux fifth-species example, in both voices, `FreeDissonanceTreatment`, `ClausulaVera`, `IndependentTextures`, and `AllowFreeSpeciesRhythmicValues` leave no marks. A fifth-species exercise is valid free species, with the cantus firmus as a voice that keeps to whole notes. Any exception (figure 85b, and fixtures with expected messages) is excluded by name with its reason, never by loosening the comparison. The inherited craft is not asserted here: Fux's lines already draw marks from it under `fifth_species`, and the species specs cover it
+- Specs grade written faults with the expected marks: an unprepared downbeat dissonance, beat-to-beat parallel fifths, both voices in quarters for three bars, a cadence with both voices stepping the same way
 
 ## Notes
 
 ### Decisions from pre-planning (2026-11-15)
 
-1. **Metric strength:** read from the meter in the shared contexts, for every guide (not a separate context, not a per-guide strategy). Beat 3 in 4/4 counts as strong, as `Position#strong?` says.
+1. **Metric strength:** read from the meter in the shared contexts, for every guide (not a separate context, not a per-guide strategy). Beat 3 in 4/4 counts as strong, as `Position#strong?` says, but only for where a suspension resolves; for dissonance, only the downbeat is strong, as in fifth species (revised in planning review).
 2. **Dissonance ownership:** either voice can explain a dissonance; unexplained ones mark every voice that attacked into it.
 3. **Style:** species-derived ("free species"), not eighteenth-century. Eighteenth-century free counterpoint is its own backlog story: [eighteenth-century-two-voice-counterpoint-guide](../backlog/eighteenth-century-two-voice-counterpoint-guide.md).
 4. **Dotted rhythms:** an option, off by default, allowing tie-equivalent dots and a dotted quarter plus stepwise eighth.
@@ -97,12 +98,13 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 4. `CompositeGuide#with` configures the composite as a whole.
 5. `bars: 8` means exactly eight; `8..` means at least eight.
 6. Strings follow the English-first precedent; translations are their own story.
-7. Fux's fifth-species examples are the clean-grading corpus.
+7. Fux's fifth-species examples are the corpus for the new guidelines only; the inherited craft already marks some of Fux's lines under `fifth_species` (revised in planning review).
 8. Hidden octaves and fifths between beats are not checked, matching fifth species.
 
 ### Scope
 
 - Two voices only. Three- and four-voice counterpoint (BardTheory Units 12 and 14) needs every pair of voices checked and is a separate change to the harmony context.
+- Inherited fifth-species craft that marks Fux's own lines: [fifth-species-published-examples](../backlog/fifth-species-published-examples.md).
 - No imitation or sequence: [free-species-with-imitation-guide](../backlog/free-species-with-imitation-guide.md) and [free-species-with-sequence-guide](../backlog/free-species-with-sequence-guide.md) build on this guide.
 - BardTheory can't place a note inside a beat yet, so students can't use the dotted-quarter-and-eighth rhythm until its editor supports subdivisions. The gem supports it regardless.
 
@@ -128,13 +130,13 @@ First move metric strength onto the meter in the shared contexts, with the speci
    - `lib/head_music/style/guideline/voice_context.rb`: `downbeat_position?` asks whether the position is the first beat of its bar; add `strong_beat_position?` delegating to `Position#strong?`; drop `cantus_firmus_positions` once nothing reads it.
    - `lib/head_music/style/guideline/harmonic_context.rb`: `downbeat_harmonic_intervals` walks the bar downbeats across the flow's span instead of the cantus firmus attacks.
    - `lib/head_music/style/guidelines/no_parallel_perfect_across_barline.rb`: `next_downbeat_interval` takes the next bar's downbeat.
-   - Run the whole species suite before any other change lands. Every existing spec must pass untouched; a failure is reported, not edited.
+   - Run the whole species suite before any other change lands. Every existing spec must pass untouched, except the corpus snapshot rows described in the acceptance criteria; a failure is reported, not edited. Regenerate the snapshot with `rake style:snapshot_corpus_fitness` and show the diff before committing.
 2. **ConsonantDownbeats excuses a suspension in either voice.** `guidelines/consonant_downbeats.rb`: `tied_suspension?` asks whether any voice sounding at the downbeat began earlier, not only the graded one. Species-neutral, since a cantus firmus attacks every downbeat. It keeps `HARMONIC_CORE` whole for the free guide, which `base_spec` requires.
 3. **Extract figure detection into an object.** A new `HeadMusic::Style::Guideline::DissonanceFigures`, built from a line's notes, its melodic intervals, and a dissonance test, answers `passing_tone?`, `neighbor_tone?`, `cambiata_dissonance?`, `double_neighbor_member?`. `guidelines/dissonance_figure_detection.rb` delegates to one built from the graded voice, so the species guidelines are unchanged. Same for the decorated-resolution rule in `guidelines/embellished_suspension_treatment.rb`, so a free-species suspension resolves the way a fifth-species one may.
 4. **`FreeDissonanceTreatment`** (new, primary in the harmony guide). At each moment the two voices form a dissonance:
-   - strong beat with a voice held over: that voice owns it as a suspension (prepared as a consonance, resolved down by step, decorated resolutions allowed); if improper, mark the held voice
-   - strong beat, both voices attacking: unexplained; mark the attackers
-   - weak beat (including the eighth after a dotted quarter): explained when any attacking voice's note is a figure in its own line, using a `DissonanceFigures` per voice; otherwise mark the attackers
+   - downbeat with a voice held over: that voice owns it as a suspension (prepared as a consonance, resolved down by step, decorated resolutions allowed); if improper, mark the held voice
+   - downbeat, both voices attacking: unexplained; mark the attackers
+   - any other moment, beat 3 in 4/4 included (and the eighth after a dotted quarter): explained when any attacking voice's note is a figure in its own line, using a `DissonanceFigures` per voice; otherwise mark the attackers
    - The graded voice gets the marks that fall on its notes.
 5. **`IndependentTextures`** (new, primary). Extract the bar-texture classification from `guidelines/mix_species_textures.rb` into a reusable object taking a voice (`MixSpeciesTextures` keeps its behavior through it). The new guideline marks runs of more than `maximum_run:` (default 2) bars where both voices share a single-species texture.
 6. **`AllowFreeSpeciesRhythmicValues`** (new subclass of `AllowFifthSpeciesRhythmicValues`, primary in the melody guide): no whole-note restriction; with `dotted_rhythms: true`, no mark for a dotted note whose tied spelling would pass, and no unpaired-eighth mark for an eighth after a dotted quarter that steps to the next note. That eighth still counts toward the bar's eighth-note limit.
@@ -157,16 +159,16 @@ None.
 
 - `spec/head_music/style/guideline/voice_context_spec.rb` (new): `downbeat_position?` and `strong_beat_position?` in 4/4, 3/2 and 2/2, against a cantus firmus that moves, and against none.
 - Behavior-preserving extractions (steps 3 and 5) are proven by the existing specs for `FloridDissonanceTreatment`, `WeakBeatDissonanceTreatment`, `EmbellishedSuspensionTreatment`, and `MixSpeciesTextures`, plus direct specs of the extracted objects.
-- One spec per new guideline under `spec/head_music/style/guidelines/`, built with `HeadMusic::Notation::ABC.parse`, covering the cases in the acceptance criteria: the five dissonance-ownership cases, the suspension owned by the held voice, beat 3 in 4/4 as strong; textures (quarters against quarters for three bars marked, quarters against whole notes not); dotted rhythms on and off; the cadence with the leading tone in either voice, in minor, with both voices stepping the same way, and with 5→1; bars as Integer, Range, and endless Range, counted from a staggered entry.
+- One spec per new guideline under `spec/head_music/style/guidelines/`, built with `HeadMusic::Notation::ABC.parse`, covering the cases in the acceptance criteria: the five dissonance-ownership cases, the suspension owned by the held voice, a passing tone on beat 3 in 4/4 unmarked; textures (quarters against quarters for three bars marked, quarters against whole notes not); dotted rhythms on and off; the cadence with the leading tone in either voice, in minor, with both voices stepping the same way, and with 5→1; bars as Integer, Range, and endless Range, counted from a staggered entry.
 - `spec/head_music/style/guides/free_species_melody_spec.rb`, `free_species_harmony_spec.rb`: membership by tier, and graded passages.
 - `spec/head_music/style/guides/composite_guide_spec.rb`: `#with` routing, the unknown-option error, display name and instruction of a configured composite.
 - `spec/head_music/style/guides/base_spec.rb`: melodic and harmonic guide counts (17 and 8), and an entry in "the harmony guides hold the rules they held" for `free_species_harmony`.
 - `guide_strings_spec.rb` and `guide_item_strings_spec.rb` pick up the new strings; the exact English is pinned in the latter.
-- `spec/head_music/style/guides/free_species_corpus_spec.rb` (new): every Fux fifth-species example grades both voices cleanly under `free_species`, with named exclusions and reasons, on the pattern of `guide_species_diagonal_spec.rb`'s liberties.
+- `spec/head_music/style/guides/free_species_corpus_spec.rb` (new): the four new guidelines leave no marks on either voice of any Fux fifth-species example, with named exclusions and reasons, on the pattern of `guide_species_diagonal_spec.rb`'s liberties.
 
 ### Risks and open questions
 
-- **Species regrading from step 1.** The premise is that every species cantus firmus attacks once per bar, on beat one. If any fixture breaks it, stop and report before adjusting anything.
+- **Species regrading from step 1.** The premise is that every species cantus firmus attacks once per bar, on beat one. If any fixture breaks it, stop and report before adjusting anything. The snapshot rows grading a cantus firmus against a florid line are the known exception. Registering the three new guides also adds snapshot rows, regenerated in step 9.
 - **The leading tone in modes.** `ClausulaVera` must agree with how `Diatonic` and the cadence already treat the raised seventh (musica ficta in Dorian, Mixolydian, Aeolian; Phrygian's lowered second). Read those rules before writing it.
 - **Figure detection on the other voice.** `DissonanceFigures` for the companion line uses the same symmetric dissonance test, but the cambiata and double neighbor check consonance of surrounding notes against "the cantus"; with two moving voices that means against whatever the graded voice sounds at those positions. Pin this with a spec.
 - **Double marking at downbeats.** A downbeat dissonance is marked by both `ConsonantDownbeats` (secondary) and `FreeDissonanceTreatment` (primary), as in fifth species today with `FloridDissonanceTreatment`. Accepted precedent, not new.
