@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-15T16:00:12-05:00
   planned_at:   2026-11-15T19:54:14-05:00
   finished_at:
-  updated_at:   2026-11-16T10:40:18-05:00
+  updated_at:   2026-11-16T10:46:43-05:00
 -->
 
 # Story: Free Species Guide
@@ -34,6 +34,7 @@ SO THAT a student who composes both lines gets feedback on each line as a melody
 - A new `strong_beat_position?` uses `Content::Position#strong?`, so beats 1 and 3 in 4/4 are strong. It locates where a suspension resolves, not where dissonance is forbidden
 - `HarmonicContext#motions` is measured between downbeats, not between cantus firmus attacks; `NoParallelPerfectAcrossBarline` finds the next downbeat from the meter
 - The guidelines that read beats through `downbeat_position?` follow the meter with it: `FloridDissonanceTreatment`, `WeakBeatDissonanceTreatment`, `SecondSpeciesBreak`, and `NoParallelPerfectAcrossBarline` (whose next downbeat also comes from the meter)
+- The guidelines that read `downbeat_harmonic_intervals` or `motions` follow it too: `ConsonantDownbeats`, `NoStrongBeatUnisons`, `NoParallelPerfectOnDownbeats`, `PreferImperfect`, `ApproachPerfectionContrarily`, and `PreferContraryMotion`. Together with the four above, these are the guidelines a snapshot change from step 1 can come from
 - The species suspension rules (`SuspensionTreatment`, `EmbellishedSuspensionTreatment`) keep reading the cantus firmus. Free species judges suspensions with its own dissonance guideline, so moving them would add species risk for no gain
 - No species grade of a counterpoint voice changes. A species cantus firmus attacks once per bar, on beat one, so the existing species specs pass unchanged and prove it. A spec that fails here is a finding to report, not a spec to update
 - The pinned corpus snapshot (`spec/fixtures/style/corpus_fitness.json`) is expected to change only in rows where a harmony guide grades a cantus firmus against a florid line, or the synthetic corpus entries: there the companion is the moving line, so "downbeat" used to mean its every attack. Those rows are regenerated and the diff reviewed before committing; any changed row grading a counterpoint voice stops the work
