@@ -847,6 +847,11 @@ en:
           instruction: "Reach every dissonance as a passing tone, cambiata, or double neighbor on a weak beat."
           violations:
             default: "Treat each dissonance as a passing tone, cambiata, or double neighbor on a weak beat."
+        free_dissonance_treatment:
+          name: "Free dissonance treatment"
+          instruction: "Explain every dissonance between the two voices: as a passing tone, neighbor tone, cambiata, or double neighbor in either voice, or as a suspension prepared and resolved down by step. Attack no dissonance on a downbeat."
+          violations:
+            default: "Explain each dissonance as a figure in either voice or as a prepared suspension resolving down by step; attack no dissonance on a downbeat."
         frequent_direction_changes:
           name: "Frequent changes of direction"
           instruction: "Turn the line around often."
