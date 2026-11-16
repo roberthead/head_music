@@ -104,4 +104,33 @@ describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
       expect(assessment.marks.map(&:code)).to eq ["2:1:000 to 3:1:000"]
     end
   end
+
+  context "with a suspension struck again on the downbeat" do
+    let(:two_voices) do
+      HeadMusic::Notation::ABC.parse(<<~ABC)
+        X:1
+        M:4/4
+        L:1/4
+        K:C
+        V:upper
+        e2 f2|f2 e2|]
+        V:lower
+        A,4|G,2 C2|]
+      ABC
+    end
+    let(:upper_voice) { two_voices.voices.first }
+
+    it "marks it by default, as an attacked dissonance" do
+      expect(assess(described_class, upper_voice).marks.map(&:code)).to eq ["2:1:000 to 2:3:000"]
+    end
+
+    it "excuses it with restruck_suspensions" do
+      expect(assess(described_class, upper_voice, restruck_suspensions: true)).to be_adherent
+    end
+
+    it "says so in its instruction" do
+      item = described_class.with(restruck_suspensions: true)
+      expect(item.instruction).to include("tied or struck again")
+    end
+  end
 end

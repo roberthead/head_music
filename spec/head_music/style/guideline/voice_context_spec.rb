@@ -7,7 +7,7 @@ describe HeadMusic::Style::Guideline::VoiceContext do
     Class.new do
       include HeadMusic::Style::Guideline::VoiceContext
 
-      public :downbeat_position?, :strong_beat_position?, :bar_downbeats, :next_strong_beat
+      public :downbeat_position?, :strong_beat_position?, :bar_downbeats, :next_strong_beat, :restruck_on_stronger_beat?
 
       attr_reader :voice
 
@@ -99,6 +99,27 @@ describe HeadMusic::Style::Guideline::VoiceContext do
     it "still reads the downbeat from the meter" do
       expect(context.downbeat_position?(position(flow, "2:1:000"))).to be true
       expect(context.downbeat_position?(position(flow, "1:3:000"))).to be false
+    end
+  end
+
+  describe "#restruck_on_stronger_beat?" do
+    let(:flow) { flow_for(meter: "4/4", upper: "e2 f2|f2 f e|d4|]", lower: "D4|D4|D4|]") }
+    let(:upper_notes) { flow.voices.first.notes }
+
+    it "finds a pitch struck again on a stronger beat" do
+      expect(context.restruck_on_stronger_beat?(upper_notes[2])).to be true
+    end
+
+    it "ignores a pitch struck again on a weaker beat" do
+      expect(context.restruck_on_stronger_beat?(upper_notes[3])).to be false
+    end
+
+    it "ignores a note that moved" do
+      expect(context.restruck_on_stronger_beat?(upper_notes[1])).to be false
+    end
+
+    it "ignores the first note" do
+      expect(context.restruck_on_stronger_beat?(upper_notes[0])).to be false
     end
   end
 end

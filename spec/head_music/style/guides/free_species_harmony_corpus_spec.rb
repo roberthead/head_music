@@ -17,14 +17,6 @@ describe HeadMusic::Style::Guides::FreeSpeciesHarmony do
     guidelines::AllowFreeSpeciesRhythmicValues
   ].freeze
 
-  # Fux's liberties, excluded by name and never by loosening the comparison.
-  liberties = {
-    # The suspended F has moved on to C by beat 3, so it never resolves by
-    # step; EmbellishedSuspensionTreatment marks the same spot under
-    # fifth_species, and guide_species_diagonal_spec names it too.
-    guidelines::FreeDissonanceTreatment => ["Fux chapter five figure 85b"]
-  }.freeze
-
   # A fixture with expected messages is a written fault, not a model.
   examples = fux_fifth_species_examples.reject { |example| example.expected_messages.any? }
 
@@ -35,8 +27,6 @@ describe HeadMusic::Style::Guides::FreeSpeciesHarmony do
   free_species_guidelines.each do |guideline|
     describe guideline.name.split("::").last do
       examples.each do |example|
-        next if liberties.fetch(guideline, []).include?(example.source)
-
         it "leaves no marks on either voice of #{example.source}" do
           marks = example.flow.voices.map { |voice| assess(guideline, voice).marks.map(&:code) }
 
@@ -46,10 +36,12 @@ describe HeadMusic::Style::Guides::FreeSpeciesHarmony do
     end
   end
 
-  # The exclusion stays honest only while the liberty still draws the mark.
-  it "still marks figure 85b under FreeDissonanceTreatment" do
+  # Under fifth_species, EmbellishedSuspensionTreatment marks this F, held over
+  # the bar line and gone to C by beat 3. Free species allows the resolution
+  # until the second strong beat, so the E on beat 2 resolves it.
+  it "accepts figure 85b's suspension resolved on beat 2" do
     example = fux_fifth_species_examples.detect { |candidate| candidate.source == "Fux chapter five figure 85b" }
 
-    expect(assess(guidelines::FreeDissonanceTreatment, example.counterpoint_voice).marks).not_to be_empty
+    expect(assess(guidelines::FreeDissonanceTreatment, example.counterpoint_voice)).to be_adherent
   end
 end

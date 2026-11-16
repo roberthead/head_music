@@ -69,6 +69,47 @@ describe HeadMusic::Style::Guidelines::FreeDissonanceTreatment do
     end
   end
 
+  context "with a suspension resolved on the next downbeat, a strong beat late" do
+    let(:upper) { "e2 f2-|f2 g2|e4|]" }
+    let(:lower) { "A,4|G,4|C4|]" }
+
+    it_behaves_like "no marks in either voice"
+  end
+
+  context "with a suspension resolved after the second strong beat" do
+    let(:upper) { "e2 f2-|f2 g2|g2 e2|]" }
+    let(:lower) { "A,4|G,4|C4|]" }
+
+    it "marks the held note" do
+      expect(marks_in(upper_voice)).to include("1:3:000 to 2:3:000")
+    end
+  end
+
+  context "with a suspension struck again, prepared and resolved down by step" do
+    let(:upper) { "e2 f2|f2 e2|]" }
+    let(:lower) { "A,4|G,2 C2|]" }
+
+    it_behaves_like "no marks in either voice"
+  end
+
+  context "with a suspension struck again and never resolved" do
+    let(:upper) { "e2 f2|f2 g2|]" }
+    let(:lower) { "A,4|G,4|]" }
+
+    it "marks the struck note and not the voice that moved beneath it" do
+      expect([marks_in(upper_voice), marks_in(lower_voice)]).to eq [["2:1:000 to 2:3:000"], []]
+    end
+  end
+
+  context "with a note struck again from a dissonance" do
+    let(:upper) { "e2 f2|f2 e2|]" }
+    let(:lower) { "G,4|G,2 C2|]" }
+
+    it "marks the unprepared suspension" do
+      expect(marks_in(upper_voice)).to include("2:1:000 to 2:3:000")
+    end
+  end
+
   # Salzer & Schachter list "dissonant passing tones in both species parts"
   # among the basic situations of combined species (p. 330).
   context "with dissonant passing tones attacked together in both voices" do

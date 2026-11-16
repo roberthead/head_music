@@ -7,8 +7,9 @@ module HeadMusic::Style::Guidelines; end
 # At each moment the voices form a dissonance:
 # - an attacking voice explains it with a figure in its own line, unless the
 #   moment is a downbeat, which forbids an attacked dissonance;
-# - otherwise a note held into a strong beat from a weaker one owns it as a
-#   suspension, and is marked if not prepared and resolved;
+# - otherwise a note held into a strong beat from a weaker one, or struck
+#   again there, owns it as a suspension, and is marked if not prepared and
+#   resolved down by step within two strong beats;
 # - otherwise every voice that attacked into it is marked.
 #
 # A passing or neighbor figure runs from consonance to consonance, so two
@@ -49,20 +50,39 @@ class HeadMusic::Style::Guidelines::FreeDissonanceTreatment < HeadMusic::Style::
     [voice, companion].filter_map { |part| part.note_at(position) }
   end
 
+  # Held into a strong beat from a weaker one, or struck again there.
   def suspension?(note, position)
-    note.position < position && strong_beat_position?(position) && note.position.strength < position.strength
+    return false unless strong_beat_position?(position)
+    return restruck_on_stronger_beat?(note) if note.position == position
+
+    note.position.strength < position.strength
   end
 
   def properly_suspended?(note, position)
-    held_voice = note.voice
-    return false if dissonant_between?(held_voice, note.position)
+    consonant_note?(preparation(note, position)) && resolution(note, position)
+  end
 
-    resolution_position = next_strong_beat(position)
-    resolution = held_voice.note_at(resolution_position)
-    return false unless resolution && resolution != note
+  def preparation(note, position)
+    return note if note.position < position
 
-    melodic = HeadMusic::Analysis::MelodicInterval.new(note, resolution)
-    melodic.step? && melodic.descending? && !dissonant_between?(held_voice, resolution_position)
+    line = note.voice.notes
+    line[line.index(note) - 1]
+  end
+
+  # The first note a step below, consonant with the other voice, by the second
+  # strong beat after the suspension. Whatever comes between is judged as a
+  # dissonance of its own.
+  def resolution(note, position)
+    deadline = next_strong_beat(next_strong_beat(position))
+    line = note.voice.notes
+    line[(line.index(note) + 1)..]
+      .take_while { |later| later.position <= deadline }
+      .detect { |later| resolves?(note, later) }
+  end
+
+  def resolves?(suspension, later)
+    melodic = HeadMusic::Analysis::MelodicInterval.new(suspension, later)
+    melodic.step? && melodic.descending? && consonant_note?(later)
   end
 
   def explained_by_figure?(note)

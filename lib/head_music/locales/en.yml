@@ -786,8 +786,10 @@ en:
         always_move:
           name: "No repeated notes"
           instruction: "Move to a different note each time rather than repeating one."
+          instruction_with_restruck_suspensions: "Move to a different note each time rather than repeating one, except to strike a suspension again."
           violations:
             default: "Always move to a different note."
+            with_restruck_suspensions: "Always move to a different note, except to strike a suspension again."
         approach_perfection_contrarily:
           name: "Contrary approach to perfect consonances"
           instruction: "Approach every perfect consonance by contrary motion."
@@ -842,8 +844,10 @@ en:
         consonant_downbeats:
           name: "Consonant downbeats"
           instruction: "Sound a consonance on every downbeat, except where a tie suspends one."
+          instruction_with_restruck_suspensions: "Sound a consonance on every downbeat, except where a suspension, tied or struck again, makes it dissonant."
           violations:
             default: "Use consonant harmonic intervals on every downbeat (unless a tied suspension)."
+            with_restruck_suspensions: "Use consonant harmonic intervals on every downbeat (unless a suspension, tied or struck again)."
         diatonic:
           name: "Diatonic notes only"
           instruction: "Write using only the notes of the key signature."

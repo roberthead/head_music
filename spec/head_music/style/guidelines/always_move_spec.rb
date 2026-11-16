@@ -98,4 +98,44 @@ describe HeadMusic::Style::Guidelines::AlwaysMove do
       expect(marks.map(&:code)).to eq ["9:3:000 to 10:2:000"]
     end
   end
+
+  context "with a suspension struck again" do
+    let(:flow) do
+      HeadMusic::Notation::ABC.parse(<<~ABC)
+        X:1
+        M:4/4
+        L:1/4
+        K:C
+        V:upper
+        e2 f2|f2 e2|]
+        V:lower
+        #{lower}
+      ABC
+    end
+    let(:upper_voice) { flow.voices.first }
+
+    context "when dissonant" do
+      let(:lower) { "A,4|G,2 C2|]" }
+
+      it "marks the repetition by default" do
+        expect(assess(described_class, upper_voice).marks_count).to eq 1
+      end
+
+      it "excuses it with restruck_suspensions" do
+        expect(assess(described_class, upper_voice, restruck_suspensions: true)).to be_adherent
+      end
+    end
+
+    context "when consonant" do
+      let(:lower) { "A,4|D,2 C2|]" }
+
+      it "marks the repetition even with restruck_suspensions" do
+        expect(assess(described_class, upper_voice, restruck_suspensions: true).marks_count).to eq 1
+      end
+    end
+
+    it "says so in its violation" do
+      expect(described_class.render_violation(restruck_suspensions: true)).to include("strike a suspension again")
+    end
+  end
 end

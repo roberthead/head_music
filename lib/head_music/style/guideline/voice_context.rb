@@ -42,6 +42,18 @@ class HeadMusic::Style::Guideline
         .detect(&:strong?) || position.start_of_next_bar
     end
 
+    # A suspension's shape without the tie: the pitch struck again on a beat
+    # stronger than the one it was first attacked on.
+    def restruck_on_stronger_beat?(note)
+      line = note.voice.notes
+      index = line.index(note)
+      return false unless index&.positive?
+
+      previous = line[index - 1]
+      previous.pitch == note.pitch && previous.next_position == note.position &&
+        previous.position.strength < note.position.strength
+    end
+
     def bar_downbeats
       @bar_downbeats ||= bar_numbers.map { |bar| HeadMusic::Content::Position.new(voice.flow, bar, 1, 0) }
     end

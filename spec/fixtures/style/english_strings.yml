@@ -110,6 +110,7 @@ en:
 - No repeated notes
 - Move to a different note each time rather than repeating one.
 - Always move to a different note.
+- Always move to a different note, except to strike a suspension again.
 - Final note on the tonic
 - Close the line on the first scale degree.
 - End on the first scale degree.
@@ -203,6 +204,8 @@ en:
 - Consonant downbeats
 - Sound a consonance on every downbeat, except where a tie suspends one.
 - Use consonant harmonic intervals on every downbeat (unless a tied suspension).
+- Use consonant harmonic intervals on every downbeat (unless a suspension, tied or
+  struck again).
 - Contrary motion preferred
 - Move the voices in opposite directions wherever the line allows.
 - Prefer contrary motion. Move voices in different melodic directions.
@@ -297,6 +300,11 @@ en:
 - Use only whole notes, half notes, quarter notes, and paired stepwise eighth notes
   on weak beats, dotted halves and wholes, and a dotted quarter followed by one eighth
   that steps on.
+- No repeated notes
+- Move to a different note each time rather than repeating one, except to strike a
+  suspension again.
+- Always move to a different note.
+- Always move to a different note, except to strike a suspension again.
 - Free dissonance treatment
 - 'Explain every dissonance between the two voices: as a passing tone, neighbor tone,
   cambiata, or double neighbor in either voice, or as a suspension prepared and resolved
@@ -314,6 +322,12 @@ en:
   than two bars.
 - Give the voices different textures; they may share one species texture for no more
   than two bars.
+- Consonant downbeats
+- Sound a consonance on every downbeat, except where a suspension, tied or struck
+  again, makes it dissonant.
+- Use consonant harmonic intervals on every downbeat (unless a tied suspension).
+- Use consonant harmonic intervals on every downbeat (unless a suspension, tied or
+  struck again).
 - Minimum of two melodic intervals
 - Include at least two melodic intervals.
 - Write at least two melodic intervals.
@@ -487,6 +501,7 @@ en_GB:
 - No repeated notes
 - Move to a different note each time rather than repeating one.
 - Always move to a different note.
+- Always move to a different note, except to strike a suspension again.
 - Final note on the tonic
 - Close the line on the first scale degree.
 - End on the first scale degree.
@@ -580,6 +595,8 @@ en_GB:
 - Consonant downbeats
 - Sound a consonance on every downbeat, except where a tie suspends one.
 - Use consonant harmonic intervals on every downbeat (unless a tied suspension).
+- Use consonant harmonic intervals on every downbeat (unless a suspension, tied or
+  struck again).
 - Contrary motion preferred
 - Move the voices in opposite directions wherever the line allows.
 - Prefer contrary motion. Move voices in different melodic directions.
@@ -672,6 +689,11 @@ en_GB:
 - Use only semibreves, minims, crotchets, and paired stepwise quavers on weak beats,
   dotted minims and semibreves, and a dotted crotchet followed by one quaver that
   steps on.
+- No repeated notes
+- Move to a different note each time rather than repeating one, except to strike a
+  suspension again.
+- Always move to a different note.
+- Always move to a different note, except to strike a suspension again.
 - Free dissonance treatment
 - 'Explain every dissonance between the two voices: as a passing tone, neighbor tone,
   cambiata, or double neighbor in either voice, or as a suspension prepared and resolved
@@ -689,6 +711,12 @@ en_GB:
   than two bars.
 - Give the voices different textures; they may share one species texture for no more
   than two bars.
+- Consonant downbeats
+- Sound a consonance on every downbeat, except where a suspension, tied or struck
+  again, makes it dissonant.
+- Use consonant harmonic intervals on every downbeat (unless a tied suspension).
+- Use consonant harmonic intervals on every downbeat (unless a suspension, tied or
+  struck again).
 - Minimum of two melodic intervals
 - Include at least two melodic intervals.
 - Write at least two melodic intervals.
