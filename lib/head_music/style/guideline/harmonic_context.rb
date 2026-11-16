@@ -13,7 +13,7 @@ class HeadMusic::Style::Guideline
     end
 
     def downbeat_harmonic_intervals
-      @downbeat_harmonic_intervals ||= cantus_firmus.notes.filter_map { |note| interval_with_cantus(note.position) }
+      @downbeat_harmonic_intervals ||= bar_downbeats.filter_map { |position| interval_with_cantus(position) }
     end
 
     def harmonic_intervals

@@ -22,7 +22,7 @@ class HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline < HeadMusic::
   end
 
   def next_downbeat_interval(weak_interval)
-    next_cf_note = cantus_firmus.notes.detect { |n| n.position > weak_interval.position }
-    interval_with_cantus(next_cf_note.position) if next_cf_note
+    next_downbeat = bar_downbeats.detect { |position| position > weak_interval.position }
+    interval_with_cantus(next_downbeat) if next_downbeat
   end
 end

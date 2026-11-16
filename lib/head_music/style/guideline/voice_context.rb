@@ -27,11 +27,22 @@ class HeadMusic::Style::Guideline
     end
 
     def downbeat_position?(position)
-      cantus_firmus_positions.include?(position.to_s)
+      position.count == 1 && position.tick.zero? && position.subtick.zero?
     end
 
-    def cantus_firmus_positions
-      @cantus_firmus_positions ||= Set.new(cantus_firmus.notes.map { |note| note.position.to_s })
+    def strong_beat_position?(position)
+      position.strong?
+    end
+
+    def bar_downbeats
+      @bar_downbeats ||= bar_numbers.map { |bar| HeadMusic::Content::Position.new(voice.flow, bar, 1, 0) }
+    end
+
+    def bar_numbers
+      sounding = voices.reject { |part| part.notes.empty? }
+      return [] if sounding.empty?
+
+      (sounding.map(&:earliest_bar_number).min..sounding.map(&:latest_bar_number).max).to_a
     end
 
     def bass_voice?
