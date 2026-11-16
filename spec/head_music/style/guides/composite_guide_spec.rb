@@ -149,4 +149,66 @@ describe HeadMusic::Style::Guides::CompositeGuide do
         .to raise_error(ArgumentError, /cannot hold another composite/)
     end
   end
+
+  describe "#with" do
+    let(:free_species) { HeadMusic::Style::Guide.get!("free_species") }
+    let(:configured) { free_species.with(dotted_rhythms: true, bars: 8..12) }
+
+    it "routes each option to the member that takes it" do
+      expect(configured.guides).to eq [
+        HeadMusic::Style::Guides::FreeSpeciesMelody.with(dotted_rhythms: true),
+        HeadMusic::Style::Guides::FreeSpeciesHarmony.with(bars: 8..12)
+      ]
+    end
+
+    it "leaves a member alone when no option is its own" do
+      expect(free_species.with(bars: 8).guides.first).to be HeadMusic::Style::Guides::FreeSpeciesMelody
+    end
+
+    it "raises for an option no member takes, naming it" do
+      expect { free_species.with(contour: :arch) }.to raise_error(ArgumentError, /takes no option: contour/)
+    end
+
+    it "keeps the registered guide's display name and instruction" do
+      expect([configured.display_name, configured.instruction]).to eq [free_species.display_name, free_species.instruction]
+    end
+
+    # So Guide.get(key) never hands back the unconfigured guide in its place.
+    it "has no key, as a configured guide has none" do
+      expect(configured.key).to be_nil
+    end
+
+    context "when compared with the same members composed directly" do
+      let(:direct) do
+        described_class.new(
+          HeadMusic::Style::Guides::FreeSpeciesMelody.with(dotted_rhythms: true),
+          HeadMusic::Style::Guides::FreeSpeciesHarmony.with(bars: 8..12)
+        )
+      end
+
+      it "is equal, whatever it was configured from" do
+        expect([configured == direct, configured.hash == direct.hash]).to eq [true, true]
+      end
+
+      it "differs only in the name it displays" do
+        expect(direct.display_name).to eq "Free Species Melody + Free Species Harmony"
+      end
+    end
+
+    it "layers a second configuration over the first" do
+      expect(configured.with(bars: 10).guides.last).to eq HeadMusic::Style::Guides::FreeSpeciesHarmony.with(bars: 10)
+      expect(configured.with(bars: 10).guides.first).to eq HeadMusic::Style::Guides::FreeSpeciesMelody.with(dotted_rhythms: true)
+    end
+
+    it "grades through its configured members" do
+      voice = fux_fifth_species_examples.first.counterpoint_voice
+      too_short = free_species.with(bars: 20..)
+
+      expect(too_short.assess(voice).fitness).to be < free_species.assess(voice).fitness
+    end
+
+    it "raises for a species composite whose members take no configuration" do
+      expect { guide.with(bars: 8) }.to raise_error(ArgumentError, /bars/)
+    end
+  end
 end

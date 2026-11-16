@@ -30,7 +30,7 @@ module HeadMusic::Style::Guides; end
 class HeadMusic::Style::Guides::CompositeGuide
   include HeadMusic::Style::Guides::TieredItems
 
-  attr_reader :guides
+  attr_reader :guides, :configured_from
 
   # Members resolved eagerly, for the reason Configured resolves its own: a bad
   # member should raise here rather than mid-grading.
@@ -38,8 +38,12 @@ class HeadMusic::Style::Guides::CompositeGuide
   # Nothing here may ask for key, display_name, or instruction. All three read
   # Guide::REGISTRY, which does not exist yet while the registry's second pass is
   # constructing composites, and reaching for it fails on require.
-  def initialize(*guides)
+  #
+  # configured_from is the registered key a configured composite came from,
+  # kept for its display name and instruction only.
+  def initialize(*guides, configured_from: nil)
     @guides = guides.flatten.freeze
+    @configured_from = configured_from
     reject_bad_members!
     # Both memoize, and this object freezes: anything lazy must be resolved here
     # or its first reader raises FrozenError.
@@ -68,6 +72,20 @@ class HeadMusic::Style::Guides::CompositeGuide
     }.freeze
   end
 
+  # Configures the composite as a whole: each option goes to every member
+  # whose configuration takes it. The result has no key, as a Configured guide
+  # has none, so a consumer stores the options beside the registered key.
+  def with(**options)
+    unknown = options.keys - guides.flat_map { |guide| option_names(guide) }
+    raise ArgumentError, "#{display_name} takes no option: #{unknown.join(", ")}" if unknown.any?
+
+    members = guides.map do |guide|
+      member_options = options.slice(*option_names(guide))
+      member_options.empty? ? guide : guide.with(**member_options)
+    end
+    self.class.new(*members, configured_from: configured_from || key)
+  end
+
   def composite?
     true
   end
@@ -89,13 +107,17 @@ class HeadMusic::Style::Guides::CompositeGuide
   end
 
   def display_name
-    key ? HeadMusic::Style::Guide.display_name_for(key) : guides.map(&:display_name).join(" + ")
+    return HeadMusic::Style::Guide.display_name_for(display_key) if display_key
+
+    guides.map(&:display_name).join(" + ")
   end
 
   # An unregistered composite borrows its members' instructions rather than
   # rendering a template no locale has.
   def instruction
-    key ? HeadMusic::Style::Guide.instruction_for(key) : guides.map(&:instruction).join(" ")
+    return HeadMusic::Style::Guide.instruction_for(display_key) if display_key
+
+    guides.map(&:instruction).join(" ")
   end
 
   def ==(other)
@@ -117,6 +139,15 @@ class HeadMusic::Style::Guides::CompositeGuide
   end
 
   private
+
+  def display_key
+    key || configured_from
+  end
+
+  def option_names(guide)
+    guide_class = guide.respond_to?(:guide_class) ? guide.guide_class : guide
+    guide_class.method(:items_by_tier).parameters.filter_map { |type, name| name if %i[key keyreq].include?(type) }
+  end
 
   # Nesting is refused rather than left unspecified. At depth two, `assessments`
   # would have to mean both the members that fitness divides by and the leaves a
