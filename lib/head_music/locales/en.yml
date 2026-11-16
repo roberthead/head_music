@@ -663,6 +663,11 @@ en:
         "8": "an octave"
         "10": "a tenth"
       guidelines:
+        independent_textures:
+          name: "Independent textures"
+          instruction: "Give the voices different textures; let them share one species texture for no more than two bars."
+          violations:
+            default: "Give the voices different textures; they may share one species texture for no more than two bars."
         large_leaps:
           name: "Leap recovery"
           instruction: "Follow each large leap with a step, a repeated note, a change of direction, or the rest of a triad."
