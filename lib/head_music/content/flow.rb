@@ -40,8 +40,8 @@ class HeadMusic::Content::Flow
     ensure_attributes(name, key_signature, meter, tempo)
     @composer = composer
     @origin = origin
-    @work = ensure_work(work)
-    @source = ensure_source(source)
+    @work = from_h_if_hash(HeadMusic::Content::Work, work)
+    @source = from_h_if_hash(HeadMusic::Content::Publication, source)
     @parts = []
     @bars = Bars.new(self)
     @comments = Array(comments).map { |text| HeadMusic::Content::Comment.new(self, text) }
@@ -107,20 +107,17 @@ class HeadMusic::Content::Flow
   # range back to a pickup bar that no voice places into -- which is what makes
   # MusicXML mark it implicit.
   def change_key_signature(bar_number, key_signature, tonal_context: nil)
-    Timeline.ensure_downbeat!(bar_number)
-    bars(bar_number)
+    allocate_downbeat(bar_number)
     timeline.change_key_signature(bar_number, key_signature, tonal_context: tonal_context)
   end
 
   def change_meter(bar_number, meter)
-    Timeline.ensure_downbeat!(bar_number)
-    bars(bar_number)
+    allocate_downbeat(bar_number)
     timeline.change_meter(bar_number, meter)
   end
 
   def change_tempo(bar_number, tempo)
-    Timeline.ensure_downbeat!(bar_number)
-    bars(bar_number)
+    allocate_downbeat(bar_number)
     timeline.change_tempo(bar_number, tempo)
   end
 
@@ -129,7 +126,7 @@ class HeadMusic::Content::Flow
   def add_tempo_ramp(from:, to:, to_tempo: nil, text: nil)
     from = position_in_flow(from)
     to = position_in_flow(to)
-    bars([from.bar_number, to.ending_bar_number].max)
+    allocate_through(from, to)
     timeline.add_tempo_ramp(from: from, to: to, to_tempo: to_tempo, text: text)
   end
 
@@ -147,7 +144,7 @@ class HeadMusic::Content::Flow
 
     from = position_in_flow(position)
     to = span ? from + span : position_in_flow(to)
-    bars([from.bar_number, to.ending_bar_number].max)
+    allocate_through(from, to)
     timeline.add_fermata(from: from, to: to, stretch: stretch)
   end
 
@@ -271,20 +268,22 @@ class HeadMusic::Content::Flow
 
   private
 
+  # Checked before allocating, since allocating needs a bar number.
+  def allocate_downbeat(bar_number)
+    Timeline.ensure_downbeat!(bar_number)
+    bars(bar_number)
+  end
+
+  def allocate_through(from, to)
+    bars([from.bar_number, to.ending_bar_number].max)
+  end
+
   def position_in_flow(position)
     HeadMusic::Content::Position.for_flow(self, position)
   end
 
-  def ensure_work(work)
-    return HeadMusic::Content::Work.from_h(work) if work.is_a?(Hash)
-
-    work
-  end
-
-  def ensure_source(source)
-    return HeadMusic::Content::Publication.from_h(source) if source.is_a?(Hash)
-
-    source
+  def from_h_if_hash(klass, value)
+    value.is_a?(Hash) ? klass.from_h(value) : value
   end
 
   def ensure_attributes(name, key_signature, meter, tempo)
