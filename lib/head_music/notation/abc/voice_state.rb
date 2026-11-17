@@ -25,20 +25,18 @@ module HeadMusic::Notation::ABC
       @invisible_rests = InvisibleRests.new(voice)
       @tuplets = TupletGrouping.new(voice)
       @overlay = VoiceOverlay.new(voice)
+      @spelling_key = SpellingKey.new(voice)
     end
 
     delegate :music_end, to: :@invisible_rests
 
     # Set to spell in the key in force where the next note starts.
     def pitch_builder_in_key
-      @pitch_builder.tap { |builder| builder.key_signature = spelling_key }
+      @pitch_builder.tap { |builder| builder.key_signature = @spelling_key.at(entered_bar_number) }
     end
 
-    # A voice spells in a key it states from that point on, even partway
-    # through a bar or where the flow keeps another voice's key, until the
-    # flow's key changes at a later bar.
     def state_key(key_signature)
-      @stated_key = [key_signature, entered_bar_number]
+      @spelling_key.state(key_signature, entered_bar_number)
     end
 
     delegate :open?, :line, to: :@tie, prefix: :tie
@@ -313,16 +311,6 @@ module HeadMusic::Notation::ABC
 
     def pending_end_position
       music_end + pending_note.rhythmic_duration(@duration_resolver)
-    end
-
-    def spelling_key
-      bar = entered_bar_number
-      flow = voice.flow
-      return flow.key_signature_at(bar) unless @stated_key
-
-      key_signature, stated_bar = @stated_key
-      changed = flow.key_signature_changes.keys.any? { |change_bar| change_bar > stated_bar && change_bar <= bar }
-      changed ? flow.key_signature_at(bar) : key_signature
     end
   end
 end
