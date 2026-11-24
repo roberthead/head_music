@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-11-24T15:36:48-08:00
+  updated_at:   2026-11-24T15:51:13-08:00
 -->
 
 # Story: Eighteenth-Century Two-Voice Counterpoint Guide
@@ -38,7 +38,7 @@ Split from the free species story during its pre-planning (2026-11-15), when tha
 ### Figures already settled
 
 - `DissonanceFigures#escape_tone?` exists (see [escape-tone-recognition](../done/escape-tone-recognition.md)). It reads shape and the consonance either side; this guide decides that the escape tone is not on a strong beat, and whether the line that follows it needs a rule. The species guides set none.
-- The double neighbor takes precedence over the escape tone. Salzer & Schachter hear a double neighbor that turns back (C–D–B–C–B) as a stepwise line "embellished by échappées", but in this guide it is still a double neighbor with a secondary mark for its continuation, not two escape tones (see [cambiata-and-double-neighbor-fifth-note](../current/cambiata-and-double-neighbor-fifth-note.md)).
+- The double neighbor takes precedence over the escape tone. Salzer & Schachter hear a double neighbor left by a third in the opposite direction (C–D–B–C–A) as a stepwise line "embellished by échappées", but in this guide it is still a double neighbor with a secondary mark for its continuation, not two escape tones (see [cambiata-and-double-neighbor-fifth-note](../current/cambiata-and-double-neighbor-fifth-note.md)).
 - The figure predicates read through a rest. Decide whether a rest breaks a figure before this guide calls them.
 
 ### Open questions

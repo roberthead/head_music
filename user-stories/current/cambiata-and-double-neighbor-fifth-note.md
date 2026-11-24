@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T15:36:48-08:00
   planned_at:   2026-11-24T15:39:53-08:00
   finished_at:
-  updated_at:   2026-11-24T15:44:16-08:00
+  updated_at:   2026-11-24T15:51:13-08:00
 -->
 
 # Story: Settle the Fifth Note of the Cambiata and Double Neighbor
@@ -20,7 +20,7 @@ SO THAT each figure is judged as its sources judge it, and the lessons can state
 - The nota cambiata stays a five-note figure, and its dissonance treatment stays a primary matter: `HeadMusic::Style::Guideline::DissonanceFigures#cambiata_dissonance?` is unchanged, with notes 1, 3, and 5 consonant
 - The double neighbor stays a four-note figure for dissonance treatment: `#double_neighbor_member?` is unchanged, and the fifth note never makes a neighbor an untreated dissonance
 - A new secondary guideline prefers that the note after a double neighbor continue by step in the direction of the figure's last step. C–D–B–C–D earns no mark; C–D–B–C–B (a step that turns back) and C–D–B–C–E (a leap) each earn one. A double neighbor that ends the line earns none
-- The guideline is in every harmony guide that recognizes the double neighbor: third species, first three species, fifth species, and free species (`ThirdSpeciesHarmony`, `FirstThreeSpeciesHarmony`, `FifthSpeciesHarmony`, `FreeSpeciesHarmony`). Second species and triple meter do not recognize the figure and do not get it. It reads completed double neighbors, whose first and last notes are consonant, whatever the note values; the bare pitch shape without those consonances earns no mark
+- The guideline is in every harmony guide that recognizes the double neighbor: third species, first three species, fifth species, and free species (`ThirdSpeciesHarmony`, `FirstThreeSpeciesHarmony`, `FifthSpeciesHarmony`, `FreeSpeciesHarmony`). Second species and triple meter do not recognize the figure and do not get it. It reads completed double neighbors, whose first and last notes are consonant and which hold at least one dissonant neighbor, whatever the note values; the bare pitch shape without those earns no mark
 - Specs cover the double neighbor followed by a step that continues, a step that turns back, and a leap, with either neighbor first, and the cambiata followed by the same three, using Salzer & Schachter's Example 3-19 for the double neighbor
 - The existing fixtures of published third and fifth species examples keep their primary marks. Any new secondary mark is listed in the story
 - The new guideline has a name, an instruction, and a violation message in en and in en_GB, which spells "neighbour". The other locales translate only the note-value guidelines and fall back to English here, as they do for the existing dissonance guidelines
@@ -55,7 +55,7 @@ On 2026-11-24 BardTheory's lessons and dictionary were changed to describe the c
   - The looser cambiata has no support in the species tradition. Its fifth note is the figure's goal, so without it the dissonance is unexplained.
   - The double neighbor's dissonances are explained by its fourth note. A poor fifth note is not an untreated dissonance, so the primary guideline should not mark it, and its message would be wrong if it did.
   - "Less good" and "should" are a discount. The gem's secondary tier carries that weight.
-  - The strongest case for a primary mark is Salzer & Schachter's reading of the turned-back form as échappées, a figure the species guides refuse. They still grade it "less good", not wrong.
+  - The strongest case for a primary mark is Salzer & Schachter's reading of progression (d) as échappées, a figure the species guides refuse. They still grade it "less good", not wrong. Read from the scan at implementation, (d) is C–D–B–C–A: the line leaves by a third in the opposite direction, not by a step back. A step back (C–D–B–C–B) is not among their four progressions; it is marked because it does not continue "the preceding melodic direction", and Open Music Theory asks for the same direction.
   - The lessons can state one shape for both: after the leap, two steps the other way. In the cambiata the second step completes the figure; in the double neighbor it is how the line should leave.
 
 - **One rule wherever the double neighbor is recognized: third species, first three species, fifth species, and free species** (Rob, 2026-11-24). The first three species guide was added at planning: its harmony guide uses `FloridDissonanceTreatment`, so it accepts the figure, and a student moving from third species to the mixed exercise should not find the preference dropped. All three already share the cambiata predicate, and the new preference reads pitches, so a fifth note that is a half note or a tied note is judged as a quarter is. Salzer & Schachter's fifth species chapter does not restate the figures; it refers to "the principle … governing the nota cambiata and double neighbor of third species".
@@ -64,7 +64,7 @@ On 2026-11-24 BardTheory's lessons and dictionary were changed to describe the c
 
 - **The cambiata's third note must be consonant; that is settled** (Rob, 2026-11-24). Salzer & Schachter say so in third species (p. 62) and twice more for combined species, where a dissonant third note is their example of "an incorrect use of the cambiata". Open Music Theory agrees. Fux allowing a dissonant third note is a liberty with no other source in the tradition, and no fixture uses it.
 
-- **The escape tone gets no rule for the note after it** (Rob, 2026-11-24). It decorates a step and is complete when it lands on a consonant note, which `escape_tone?` already requires. How a line continues after one belongs to the eighteenth-century guide. The double neighbor keeps its precedence there: a turned-back double neighbor is a double neighbor with a secondary mark, not two escape tones.
+- **The escape tone gets no rule for the note after it** (Rob, 2026-11-24). It decorates a step and is complete when it lands on a consonant note, which `escape_tone?` already requires. How a line continues after one belongs to the eighteenth-century guide. The double neighbor keeps its precedence there: a double neighbor left in the opposite direction is a double neighbor with a secondary mark, not two escape tones.
 
 ## Implementation Plan
 
@@ -140,3 +140,44 @@ Check the new examples by deleting each clause of the guideline in turn; each de
 - **The snapshot is a decision, not a refactor.** Regenerating it changes hundreds of rows by item count. Read the diff for any fall in fitness before accepting it.
 - **A rest after the figure does not break it**, as with the other figure predicates. Whether a rest should break a figure is recorded on the eighteenth-century guide story and is not settled here.
 - **RubyCritic.** The new guideline is small, but `rake validate` fails on a D or F file, so run it before committing.
+
+## Implementation Notes
+
+Implemented on 2026-11-24 in `ce8c4409`. `bundle exec rake validate` passes.
+
+### Salzer & Schachter's Example 3-19
+
+Transcribed from the scan (printed p. 62, PDF p. 79) at 400 dpi. The counterpoint is the lower voice, in alto clef. A tenor-clef reading puts a diminished fifth on the second downbeat of (a), and the alto reading gives a consonant downbeat in all four progressions.
+
+| | Cantus firmus | Counterpoint | Their verdict | Marks |
+| --- | --- | --- | --- | --- |
+| a | E5, F5 | C4 D4 B3 C4, D4 | good | 0 |
+| b | E5, D5 | C4 B3 D4 C4, B3 | good | 0 |
+| c | E5, D5 | C4 D4 B3 C4, F4 | less good | 1 |
+| d | E4, F4 | C4 D4 B3 C4, A3 | less good | 1 |
+
+### A double neighbor needs a dissonant neighbor
+
+The first regeneration of the pinned corpus lowered five voices, none of them a double neighbor: four cantus firmi and one first species counterpoint, each with the shape in whole notes and every note consonant (the opening of Fux's C ionian cantus firmus, C–B–D–C–E, is one). `DissonanceFigures#double_neighbors` now leaves out a shape with no dissonant neighbor. Salzer & Schachter say only that "it is not necessary that both the second and third quarters contain dissonances"; against one held note the two neighbors cannot both be consonant. An acceptance criterion was amended to say so.
+
+### The pinned corpus
+
+No row falls. All 576 gated rows of the four harmony guides and their four composites gain one item; 224 rise by at most 0.010 because the secondary tier's weight is shared among one more item, and 352 move in item count only. No published voice in the corpus holds a double neighbor with a dissonant neighbor, so none is marked.
+
+### Checked by deletion
+
+Each clause of the guideline was deleted in turn and failed at least one example: the step, the direction, the missing fifth note, and the missing companion voice. So was the dissonant-neighbor clause in `double_neighbors`.
+
+### Not done
+
+- Free species is covered by Example 3-19, where the lower of two unroled voices carries the figure and the other is its companion. There is no spec with both voices moving under the figure.
+- A rest after the figure does not break it, as planned.
+
+## BardTheory follow-up
+
+- Dictionary, double neighbor (`db/seeds/dictionary/d.yml`): add the preferred continuation, a step on in the direction of the figure's last step, and say that the gem marks other continuations lightly.
+- Dictionary, nota cambiata (`db/seeds/dictionary/n.yml`): no change needed; it already describes five notes. It could say the third and fifth notes are consonant.
+- `the-cambiata` lesson (`db/seeds/lessons/the-cambiata.yml`): can state the shared shape, after the leap two steps the other way, and how the second step differs between the figures.
+- `third-species-guidelines` and `fifth-species-guidelines` lessons: add the double neighbor's continuation to the list of preferences.
+- The lesson for the mixed first, second, and third species exercise, if it lists the double neighbor: the same line.
+- Raise the head_music version BardTheory depends on once this is released; the guideline's strings are in en and en_GB.
