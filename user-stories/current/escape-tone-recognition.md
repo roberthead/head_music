@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T14:36:11-08:00
   planned_at:   2026-11-24T14:40:05-08:00
   finished_at:
-  updated_at:   2026-11-24T14:47:12-08:00
+  updated_at:   2026-11-24T14:53:47-08:00
 -->
 
 # Story: Recognize the Escape Tone (Échappée)
@@ -98,3 +98,28 @@ The existing guideline specs stand unchanged, which shows that no guide's marks 
 
 - `a b g a` is the only double neighbor shape whose second neighbor is consonant against a held note a sixth below, so the precedence spec depends on that one line. If the existing double neighbor spec (`g a f g`) were reused, the dissonant F would make the escape tone false on its own and the precedence clause would go untested.
 - A consonant note in the escape shape answers true, as a consonant note between two steps answers true to `passing_tone?`. A caller that names figures must ask about dissonant notes only.
+
+## Review
+
+Reviewed 2026-11-24 at `49114e6e`. The two changed spec files pass (24 examples), `spec/head_music/style` passes (2286 examples), and rubocop is clean on the changed files.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| 1 | `escape_tone?(note)` with the stated shape | ✅ | `lib/head_music/style/guideline/dissonance_figures.rb:42-47`, `:90-95` |
+| 2 | Reads shape and the consonance either side; no test of the note itself, no meter | ✅ | `dissonance_figures.rb:42-47` |
+| 3 | `DissonanceFigureDetection` delegates `escape_tone?` | ✅ | `lib/head_music/style/guidelines/dissonance_figure_detection.rb:10`; `spec/head_music/style/guidelines/dissonance_figure_detection_spec.rb:67-77` |
+| 4 | No existing guide's marks change | ✅ | `escape_tone?` has no caller in `lib` beyond its definition and the delegate; no guideline source or spec is in the diff |
+| 5 | The double neighbor takes precedence; predicates stay mutually exclusive | ✅ | `dissonance_figures.rb:46`; `spec/head_music/style/guideline/dissonance_figures_spec.rb:152-159` |
+| 6 | Specs cover the seven listed cases | ⚠️ | All seven are present, but the same-direction case (`dissonance_figures_spec.rb:126-130`) does not exercise the direction clause |
+| 7 | CHANGELOG entry under Unreleased | ✅ | `CHANGELOG.md:10-12` |
+
+### Findings
+
+1. **The direction clause is untested.** In `a b d' c'` over C the landing D is a ninth, so the consonance test rejects the line by itself. With `approach.direction != leap.direction` replaced by `true`, every example still passes. The plan's table carries the same flaw ("6 7 9"). `e f a g` over C (3 4 6) is false only because of the direction clause.
+2. **The step approach is untested.** Dropping `step?` from `escape_shape?` keeps every example green. `e g e c` over C (a third up, a third down, all consonant) is false only because of that clause. This case is not on the criteria list.
+3. **A rest inside the figure does not break it.** `a b z g` and `a z b g` both answer true for B. `passing_tone?` and `neighbor_tone?` read through rests the same way, and only `consonant_run?` breaks at one, so this is consistent with the siblings rather than a regression. The eighteenth-century guide inherits it.
+4. **Precedence needs a completed double neighbor, as the criterion says, and the incomplete cases are not pinned.** `a b g` at the end of a line answers true for B, and so does `a b g a` where the closing A is dissonant.
+
+No issues found in edge positions (first, last, second-to-last, a note outside the series), compound or repeated-note intervals, mutual exclusivity with the other four predicates, or the CLAUDE.md conventions.
