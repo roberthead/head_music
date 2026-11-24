@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-11-24T13:21:54-08:00
-  activated_at:
+  activated_at: 2026-11-24T15:36:48-08:00
   planned_at:
   finished_at:
-  updated_at:   2026-11-24T15:35:04-08:00
+  updated_at:   2026-11-24T15:36:48-08:00
 -->
 
 # Story: Settle the Fifth Note of the Cambiata and Double Neighbor
@@ -59,7 +59,7 @@ On 2026-11-24 BardTheory's lessons and dictionary were changed to describe the c
 
 - **One rule in third species, fifth species, and free species** (Rob, 2026-11-24). All three already share the cambiata predicate, and the new preference reads pitches, so a fifth note that is a half note or a tied note is judged as a quarter is. Salzer & Schachter's fifth species chapter does not restate the figures; it refers to "the principle … governing the nota cambiata and double neighbor of third species".
 
-- **Where a figure may begin is a separate story** (Rob, 2026-11-24): [dissonance-figure-placement](dissonance-figure-placement.md). The gem asks neither where a figure sits in the bar nor what note values carry it. That is a different rule, it would add primary marks in three guides, and it needs its own check against the fixtures. This story adds only a secondary mark.
+- **Where a figure may begin is a separate story** (Rob, 2026-11-24): [dissonance-figure-placement](../backlog/dissonance-figure-placement.md). The gem asks neither where a figure sits in the bar nor what note values carry it. That is a different rule, it would add primary marks in three guides, and it needs its own check against the fixtures. This story adds only a secondary mark.
 
 - **The cambiata's third note must be consonant; that is settled** (Rob, 2026-11-24). Salzer & Schachter say so in third species (p. 62) and twice more for combined species, where a dissonant third note is their example of "an incorrect use of the cambiata". Open Music Theory agrees. Fux allowing a dissonant third note is a liberty with no other source in the tradition, and no fixture uses it.
 

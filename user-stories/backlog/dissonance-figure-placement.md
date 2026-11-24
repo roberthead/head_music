@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-11-24T15:35:04-08:00
+  updated_at:   2026-11-24T15:36:48-08:00
 -->
 
 # Story: Place the Cambiata and Double Neighbor in the Bar
@@ -26,7 +26,7 @@ SO THAT a leap from a dissonance is not excused by a shape that begins on the wr
 
 ## Notes
 
-Raised on 2026-11-24 while settling [cambiata-and-double-neighbor-fifth-note](cambiata-and-double-neighbor-fifth-note.md), and split from it because it is a different rule that would add primary marks.
+Raised on 2026-11-24 while settling [cambiata-and-double-neighbor-fifth-note](../current/cambiata-and-double-neighbor-fifth-note.md), and split from it because it is a different rule that would add primary marks.
 
 `HeadMusic::Style::Guideline::DissonanceFigures` is given notes, melodic intervals, and a dissonance test, and no meter. Its figure predicates read pitch shape alone. Checked on 2026-11-24 over a held C:
 
