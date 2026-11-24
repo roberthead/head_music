@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-11-24T13:44:31-05:00
   activated_at: 2026-11-24T14:36:11-08:00
   planned_at:   2026-11-24T14:40:05-08:00
-  finished_at:
-  updated_at:   2026-11-24T15:11:11-08:00
+  finished_at:  2026-11-24T15:14:33-08:00
+  updated_at:   2026-11-24T15:14:33-08:00
 -->
 
 # Story: Recognize the Escape Tone (Échappée)
@@ -124,3 +124,23 @@ Reviewed 2026-11-24 at `49114e6e`. The two changed spec files pass (24 examples)
 4. **Precedence needs a completed double neighbor, as the criterion says, and the incomplete cases are not pinned.** `a b g` at the end of a line answers true for B, and so does `a b g a` where the closing A is dissonant.
 
 No issues found in edge positions (first, last, second-to-last, a note outside the series), compound or repeated-note intervals, mutual exclusivity with the other four predicates, or the CLAUDE.md conventions.
+
+## Learnings
+
+### What went well
+
+- Shipping the predicate ahead of its first caller kept the story small: one public method, one private shape test, one delegate, and no guide's marks to re-verify.
+- Settling the decisions before planning (the third, the double neighbor's precedence, accent as the caller's question) left nothing to argue about during implementation. The plan's risk note on `a b g a` meant the precedence clause was tested by a line that depends on it.
+- Following `cambiata_dissonance?` gave the shape test, the consonance test and the edge handling for free.
+
+### What was surprising
+
+- A spec can name a clause without testing it. The same-direction example landed on a ninth, so the consonance test rejected it and the direction clause could be deleted with every example green. The flaw was in the plan's table, where "6 7 9" showed it in plain sight.
+- The step approach had no example at all, because the criteria listed the ways an escape tone goes wrong after the step and took the step for granted.
+- The figure predicates read through rests. Only `consonant_run?` breaks at one.
+
+### What to do differently
+
+- When a plan lists negative examples, check that each fails for exactly one reason: every other clause of the predicate should hold for that line. For figures over a held note, write the harmonic intervals beside the line and confirm that only the intended note or interval is at fault.
+- Have the review delete each clause in turn and re-run the specs. It found both gaps in minutes.
+- Decide whether a rest breaks a figure before the eighteenth-century guide calls these predicates, and settle it for all five at once.
