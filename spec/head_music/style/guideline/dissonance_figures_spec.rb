@@ -124,7 +124,13 @@ describe HeadMusic::Style::Guideline::DissonanceFigures do
     end
 
     context "with a step followed by a third in the same direction" do
-      let(:upper) { "a b d' c'|g4|]" }
+      let(:upper) { "e f a g|g4|]" }
+
+      it { is_expected.to be false }
+    end
+
+    context "with a third followed by a third in the opposite direction" do
+      let(:upper) { "e g e c|g4|]" }
 
       it { is_expected.to be false }
     end
