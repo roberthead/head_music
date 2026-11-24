@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-11-15T19:12:18-05:00
+  updated_at:   2026-11-24T15:35:04-08:00
 -->
 
 # Story: Eighteenth-Century Two-Voice Counterpoint Guide
@@ -34,6 +34,12 @@ Split from the free species story during its pre-planning (2026-11-15), when tha
 
 - Kennan, *Counterpoint: Based on Eighteenth-Century Practice*, 3rd ed. (full text on archive.org as `KentKennanCounterpoint`): "Principles of Two-Voice Counterpoint," cadences pp. 27-28: "in authentic cadences the dominant chord is always employed in root position."
 - Candidates from `~/Documents/_music-study/counterpoint/counterpoint-sources.txt`: Gauldin, *A Practical Approach to Eighteenth-Century Counterpoint*; Benjamin, *The Craft of Tonal Counterpoint*.
+
+### Figures already settled
+
+- `DissonanceFigures#escape_tone?` exists (see [escape-tone-recognition](../done/escape-tone-recognition.md)). It reads shape and the consonance either side; this guide decides that the escape tone is not on a strong beat, and whether the line that follows it needs a rule. The species guides set none.
+- The double neighbor takes precedence over the escape tone. Salzer & Schachter hear a double neighbor that turns back (C–D–B–C–B) as a stepwise line "embellished by échappées", but in this guide it is still a double neighbor with a secondary mark for its continuation, not two escape tones (see [cambiata-and-double-neighbor-fifth-note](cambiata-and-double-neighbor-fifth-note.md)).
+- The figure predicates read through a rest. Decide whether a rest breaks a figure before this guide calls them.
 
 ### Open questions
 
