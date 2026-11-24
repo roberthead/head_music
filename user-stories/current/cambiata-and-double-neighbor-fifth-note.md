@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T15:36:48-08:00
   planned_at:   2026-11-24T15:39:53-08:00
   finished_at:
-  updated_at:   2026-11-24T15:39:53-08:00
+  updated_at:   2026-11-24T15:42:55-08:00
 -->
 
 # Story: Settle the Fifth Note of the Cambiata and Double Neighbor
@@ -20,11 +20,12 @@ SO THAT each figure is judged as its sources judge it, and the lessons can state
 - The nota cambiata stays a five-note figure, and its dissonance treatment stays a primary matter: `HeadMusic::Style::Guideline::DissonanceFigures#cambiata_dissonance?` is unchanged, with notes 1, 3, and 5 consonant
 - The double neighbor stays a four-note figure for dissonance treatment: `#double_neighbor_member?` is unchanged, and the fifth note never makes a neighbor an untreated dissonance
 - A new secondary guideline prefers that the note after a double neighbor continue by step in the direction of the figure's last step. C–D–B–C–D earns no mark; C–D–B–C–B (a step that turns back) and C–D–B–C–E (a leap) each earn one. A double neighbor that ends the line earns none
-- The guideline is in the third species, fifth species, and free species guides, and reads the pitch shape whatever the note values
+- The guideline is in the third species, fifth species, and free species harmony guides (`ThirdSpeciesHarmony`, `FifthSpeciesHarmony`, `FreeSpeciesHarmony`). It reads completed double neighbors, whose first and last notes are consonant, whatever the note values; the bare pitch shape without those consonances earns no mark
 - Specs cover the double neighbor followed by a step that continues, a step that turns back, and a leap, with either neighbor first, and the cambiata followed by the same three, using Salzer & Schachter's Example 3-19 for the double neighbor
 - The existing fixtures of published third and fifth species examples keep their primary marks. Any new secondary mark is listed in the story
-- The new guideline has an instruction in every locale (en, en_GB, de, es, fr, it, ru), and the existing dissonance instructions are checked for whether they should say that the cambiata is five notes
-- CHANGELOG entry under Unreleased, saying that a double neighbor left by a leap or a turn back now earns a secondary mark
+- The new guideline has a name, an instruction, and a violation message in en and in en_GB, which spells "neighbour". The other locales translate only the note-value guidelines and fall back to English here, as they do for the existing dissonance guidelines
+- The pinned corpus snapshot is regenerated. Any row whose fitness falls is listed in the story
+- CHANGELOG entry under Unreleased, saying that a double neighbor left by a leap or a turn back now earns a secondary mark, and stating the shift in the pinned corpus
 - BardTheory's `the-cambiata`, `third-species-guidelines`, and `fifth-species-guidelines` lessons and its dictionary entries for the nota cambiata and double neighbor are listed as follow-up: the double neighbor entries gain the preferred continuation, and the lessons can state the shared shape (after the leap, two steps the other way)
 
 ## Notes
