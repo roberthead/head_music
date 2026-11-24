@@ -11,6 +11,7 @@ describe HeadMusic::Style::Guides::FirstThreeSpeciesHarmony do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferContraryMotion }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferImperfect }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::FloridDissonanceTreatment }
+  specify { expect(described_class.items_by_tier[:secondary].map(&:guideline)).to include HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor }
 
   context "with a well-formed counterpoint combining the first three species" do
     let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian", meter: "4/4") }

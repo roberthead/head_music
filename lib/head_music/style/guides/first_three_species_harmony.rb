@@ -10,5 +10,5 @@ class HeadMusic::Style::Guides::FirstThreeSpeciesHarmony < HeadMusic::Style::Gui
   # The diminution core, absent until now: this guide covers second and third
   # species, both of which set several notes against one, so the two rules about
   # doing that apply to it by construction.
-  secondary_items(*DIMINUTION_HARMONIC_CRAFT)
+  secondary_items(*DIMINUTION_HARMONIC_CRAFT, HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor)
 end

@@ -13,6 +13,7 @@ describe HeadMusic::Style::Guides::SecondSpeciesHarmony do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferContraryMotion }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferImperfect }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment }
+  specify { expect(guidelines_of(described_class)).not_to include HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor }
 
   context "with a well-formed second-species counterpoint" do
     let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }

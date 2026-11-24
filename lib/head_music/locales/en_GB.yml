@@ -110,6 +110,11 @@ en_GB:
           instruction: "Write in semibreves, minims, and crotchets."
           violations:
             default: "Use only semibreves, minims, and crotchets."
+        continue_after_double_neighbor:
+          name: "Continuation after a double neighbour"
+          instruction: "Leave a double neighbour by step, continuing in the direction of its last step."
+          violations:
+            default: "Continue by step in the same direction after a double neighbour."
         first_bar_half_notes:
           name: "Minims in the first bar"
           instruction: "Open the first bar with minims, or enter after a minim rest."

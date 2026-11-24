@@ -36,6 +36,15 @@ class HeadMusic::Style::Guideline
       [1, 2].any? { |before| double_neighbor_figure?(figure_start(note, before)) }
     end
 
+    # The four notes of each completed double neighbor. Where both neighbors
+    # are consonant the shape excuses nothing and is only a turn in the line.
+    def double_neighbors
+      notes.each_index
+        .select { |start| double_neighbor_figure?(start) }
+        .map { |start| notes[start, 4] }
+        .reject { |figure| all_consonant?(*figure) }
+    end
+
     # Escape tone: approached by step from a consonant note and left by a
     # third in the opposite direction to a consonant note. The first neighbor
     # of a double neighbor has the same shape and belongs to that figure.

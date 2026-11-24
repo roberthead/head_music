@@ -145,7 +145,7 @@ describe HeadMusic::Style::Guide do
   # gets swept. Update the numbers; do not loosen them.
   it "covers every registry entry" do
     expect(guides.size).to eq 33
-    expect(items.size).to eq 76
+    expect(items.size).to eq 77
   end
 
   # display_name, not name: the name methods return Ruby class names. Shared

@@ -23,6 +23,7 @@ GUIDE_ITEM_STRINGS = [
   ["ConsonantClimax", {}, "Peak once, or twice with a step between."],
   ["ConsonantDownbeats", {}, "Use consonant harmonic intervals on every downbeat (unless a tied suspension)."],
   ["ConsonantDownbeats", {restruck_suspensions: true}, "Use consonant harmonic intervals on every downbeat (unless a suspension, tied or struck again)."],
+  ["ContinueAfterDoubleNeighbor", {}, "Continue by step in the same direction after a double neighbor."],
   ["Contoured", {contour: :arch}, "Write a melody with the arch contour."],
   ["Contoured", {contour: :ascending}, "Write a melody with the ascending contour."],
   ["Contoured", {contour: :descending}, "Write a melody with the descending contour."],

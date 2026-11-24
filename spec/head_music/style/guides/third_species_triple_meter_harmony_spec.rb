@@ -13,6 +13,7 @@ describe HeadMusic::Style::Guides::ThirdSpeciesTripleMeterHarmony do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferContraryMotion }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferImperfect }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::TripleMeterDissonanceTreatment }
+  specify { expect(guidelines_of(described_class)).not_to include HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor }
 
   context "with a well-formed triple-meter counterpoint" do
     let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian", meter: "3/4") }

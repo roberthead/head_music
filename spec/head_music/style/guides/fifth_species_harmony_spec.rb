@@ -14,6 +14,7 @@ describe HeadMusic::Style::Guides::FifthSpeciesHarmony do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferContraryMotion }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferImperfect }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::FloridDissonanceTreatment }
+  specify { expect(described_class.items_by_tier[:secondary].map(&:guideline)).to include HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment }
   specify { expect(guidelines_of(described_class)).not_to include HeadMusic::Style::Guidelines::SuspensionTreatment }
 

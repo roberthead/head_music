@@ -91,6 +91,26 @@ describe HeadMusic::Style::Guideline::DissonanceFigures do
     end
   end
 
+  # The fifth note is the cambiata's goal: without two steps back there is no
+  # figure, however consonant the note the line reaches instead.
+  context "with a nota cambiata that turns back after one step" do
+    let(:upper) { "c' b g a|g4|]" }
+    let(:lower) { "e2 c2|G4|]" }
+
+    it "does not recognize the figure" do
+      expect(figures.cambiata_dissonance?(line.notes[1])).to be false
+    end
+  end
+
+  context "with a nota cambiata that leaps on after one step" do
+    let(:upper) { "c' b g a|d'4|]" }
+    let(:lower) { "e2 c2|G4|]" }
+
+    it "does not recognize the figure" do
+      expect(figures.cambiata_dissonance?(line.notes[1])).to be false
+    end
+  end
+
   context "with a double neighbor" do
     let(:upper) { "g a f g|e4|]" }
     let(:lower) { "C4|C4|]" }
@@ -98,6 +118,37 @@ describe HeadMusic::Style::Guideline::DissonanceFigures do
     it "recognizes each member" do
       expect(figures.double_neighbor_member?(line.notes[1])).to be true
       expect(figures.double_neighbor_member?(line.notes[2])).to be true
+    end
+
+    it "returns the four notes of the figure" do
+      expect(figures.double_neighbors).to eq [line.notes.first(4)]
+    end
+  end
+
+  context "with the shape of a double neighbor closing on a dissonant note" do
+    let(:upper) { "g a f g|e4|]" }
+    let(:lower) { "C2 F2|C4|]" }
+
+    it "returns no double neighbor" do
+      expect(figures.double_neighbors).to be_empty
+    end
+  end
+
+  context "with the shape of a double neighbor whose notes are all consonant" do
+    let(:upper) { "c'4|b4|d'4|c'4|e'4|]" }
+    let(:lower) { "E4|G4|F4|E4|C4|]" }
+
+    it "returns no double neighbor" do
+      expect(figures.double_neighbors).to be_empty
+    end
+  end
+
+  context "with no double neighbor in the line" do
+    let(:upper) { "e f g f|e4|]" }
+    let(:lower) { "C4|C4|]" }
+
+    it "returns no double neighbor" do
+      expect(figures.double_neighbors).to be_empty
     end
   end
 

@@ -848,6 +848,11 @@ en:
           violations:
             default: "Use consonant harmonic intervals on every downbeat (unless a tied suspension)."
             with_restruck_suspensions: "Use consonant harmonic intervals on every downbeat (unless a suspension, tied or struck again)."
+        continue_after_double_neighbor:
+          name: "Continuation after a double neighbor"
+          instruction: "Leave a double neighbor by step, continuing in the direction of its last step."
+          violations:
+            default: "Continue by step in the same direction after a double neighbor."
         diatonic:
           name: "Diatonic notes only"
           instruction: "Write using only the notes of the key signature."
