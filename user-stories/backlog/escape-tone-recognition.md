@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-11-24T13:50:42-08:00
+  updated_at:   2026-11-24T13:54:56-08:00
 -->
 
 # Story: Recognize the Escape Tone (Échappée)
@@ -43,11 +43,16 @@ BardTheory's dictionary entry for the escape tone currently says "Fux doesn't di
   - Grading. A step followed by a third the other way is a common shape in careless writing. With the figure allowed, a triple-meter exercise could no longer say plainly that a dissonance was left by leap.
   - Inside a 3:1 bar the figure is nearly empty anyway: the notes either side of the escape are a step apart and must both be consonant with one cantus firmus note, which leaves only 6–7–5 and 5–4–6.
 
+- **Triple-meter counterpoint does not allow the double neighbor either** (Rob, 2026-11-24). It was raised as the leaping figure that fits a 3:1 bar exactly (C–D–B, then C on the next downbeat) and resolves by step, and a story was drafted and deleted the same day. The reasons:
+  - The line does not move. A double neighbor ends on the pitch it started from, and in triple meter it can only start on a downbeat, so it puts the same pitch on two consecutive downbeats. That breaks the spirit of "always move."
+  - The other placements are not double neighbors under strict rules. Starting on beat 2 puts the second neighbor on the next downbeat, where it must be consonant, and leaves the first to be quit by leap, which is the escape tone refused above. Starting on beat 3 puts the first neighbor on a downbeat and leaves the second as a dissonance approached by leap.
+  - In 4:1 the problem does not arise: the figure starts on beat 1, returns to its pitch on beat 4, and the next downbeat moves on. Third species keeps the figure.
+  - The gem's `AlwaysMove` guideline would not have caught the static bar. It marks two adjacent notes at the same pitch, and no guideline reads the pitches of consecutive downbeats.
+
 ### Open questions
 
 - Is the leap limited to a third, or is any leap in the opposite direction an escape tone?
 - Does the eighteenth-century guide require the escape tone to be metrically weak relative to the note it leaps to, and how is that read from the meter?
-- Should triple meter allow the double neighbor? In 3:1 the figure is exactly one bar plus its arrival (C–D–B, then C on the next downbeat), it resolves by step, and it belongs to the strict style. Raised alongside the decision above and not decided; it would be its own story.
 
 ## Implementation Plan
 
