@@ -63,4 +63,16 @@ describe HeadMusic::Style::Guidelines::DissonanceFigureDetection do
       expect(host.send(:double_neighbor_member?, extra_note)).to be false
     end
   end
+
+  describe "#escape_tone?" do
+    let(:series) { HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/4\nK:C\na b g e|]").voices.first.notes }
+
+    it "recognizes a note left by a third against its approach by step" do
+      expect(host.send(:escape_tone?, series[1])).to be true
+    end
+
+    it "returns false for a note that is not in the series" do
+      expect(host.send(:escape_tone?, extra_note)).to be false
+    end
+  end
 end

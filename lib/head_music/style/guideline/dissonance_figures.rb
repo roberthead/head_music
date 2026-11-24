@@ -2,10 +2,10 @@ module HeadMusic::Style; end
 
 class HeadMusic::Style::Guideline
   # The ornamental figures a dissonant note can belong to in one line: passing
-  # tone, neighbor tone, nota cambiata, and double neighbor. The line is given
-  # as its notes and melodic intervals; the dissonance test is given as a
-  # callable, so the same figures can be read in a voice moving against a
-  # cantus firmus or against another moving voice.
+  # tone, neighbor tone, nota cambiata, double neighbor, and escape tone. The
+  # line is given as its notes and melodic intervals; the dissonance test is
+  # given as a callable, so the same figures can be read in a voice moving
+  # against a cantus firmus or against another moving voice.
   class DissonanceFigures
     attr_reader :notes, :melodic_intervals
 
@@ -34,6 +34,16 @@ class HeadMusic::Style::Guideline
 
     def double_neighbor_member?(note)
       [1, 2].any? { |before| double_neighbor_figure?(figure_start(note, before)) }
+    end
+
+    # Escape tone: approached by step from a consonant note and left by a
+    # third in the opposite direction to a consonant note. The first neighbor
+    # of a double neighbor has the same shape and belongs to that figure.
+    def escape_tone?(note)
+      start = figure_start(note, 1)
+      escape_shape?(start) &&
+        all_consonant?(*notes.values_at(start, start + 2)) &&
+        !double_neighbor_figure?(start)
     end
 
     # A passing or neighbor figure of any length: the stepwise run through the
@@ -75,6 +85,13 @@ class HeadMusic::Style::Guideline
       leap_direction = leap.direction
       approach.direction == leap_direction &&
         steps_back.all? { |step| step.step? && step.direction != leap_direction }
+    end
+
+    def escape_shape?(start)
+      approach, leap = figure_intervals(start, 2)
+      return false unless approach&.step? && leap.number == 3
+
+      approach.direction != leap.direction
     end
 
     # Double neighbor: a four-note figure. The first and last notes are the

@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T14:36:11-08:00
   planned_at:   2026-11-24T14:40:05-08:00
   finished_at:
-  updated_at:   2026-11-24T14:40:05-08:00
+  updated_at:   2026-11-24T14:47:12-08:00
 -->
 
 # Story: Recognize the Escape Tone (Échappée)

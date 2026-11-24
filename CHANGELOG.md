@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `HeadMusic::Style::Guideline::DissonanceFigures#escape_tone?` recognizes the escape tone (échappée): a note approached by step from a consonant note and left by a third in the opposite direction to a consonant note. The first neighbor of a double neighbor is not an escape tone. `DissonanceFigureDetection` delegates the predicate, so a dissonance guideline can accept the figure. No guide allows it yet.
+
 ## [24.0.0] - 2026-11-16
 
 Free species arrives: `Guide.get("free_species")` grades two voices composed together with no cantus firmus, with the guidelines it needs, and a composite guide can now be configured as a whole. MusicXML and LilyPond keep a part's instruments and their transpositions through a write and a read, the tenor and Irish tenor banjos join the catalog, and the banjo's alternate tunings sound the pitches they name.
