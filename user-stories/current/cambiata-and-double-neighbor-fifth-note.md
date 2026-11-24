@@ -2,9 +2,9 @@
 metadata:
   created_at:   2026-11-24T13:21:54-08:00
   activated_at: 2026-11-24T15:36:48-08:00
-  planned_at:
+  planned_at:   2026-11-24T15:39:53-08:00
   finished_at:
-  updated_at:   2026-11-24T15:36:48-08:00
+  updated_at:   2026-11-24T15:39:53-08:00
 -->
 
 # Story: Settle the Fifth Note of the Cambiata and Double Neighbor
@@ -67,4 +67,74 @@ On 2026-11-24 BardTheory's lessons and dictionary were changed to describe the c
 
 ## Implementation Plan
 
-[to be filled in by /stories plan]
+Add one secondary, weak guideline, `ContinueAfterDoubleNeighbor`, to the harmony guides that recognize the double neighbor. It asks `DissonanceFigures` for the completed double neighbors in the line and marks each one whose next note does not continue by step in the direction of the figure's last step. The figure predicates do not change. The closest existing feature is `PreferLongBeforeShort`: a weak secondary item sourced from Salzer & Schachter, whose CHANGELOG entry accounts for the shift in the pinned corpus.
+
+The guideline belongs to the harmony guides, not the melody guides, because it must read real figures. A shape-only reading would mark three Fux lines that are not double neighbors: figure 55 bar 8 (A–G–B♭–A, then a fifth down), figure 82 bar 3, and figure 84b bar 3 all have the shape beginning on beat 2 with a dissonant first note. `double_neighbor_figure?` already requires the first and last notes to be consonant, which excludes all three.
+
+### Steps
+
+1. `lib/head_music/style/guideline/dissonance_figures.rb`
+   - Public `double_neighbors`: the four notes of each completed double neighbor, in order, from every `start` where `double_neighbor_figure?(start)` holds.
+   - No change to `cambiata_dissonance?`, `double_neighbor_member?`, or `escape_tone?`.
+2. `lib/head_music/style/guidelines/dissonance_figure_detection.rb`: delegate `double_neighbors`.
+3. `lib/head_music/style/guidelines/continue_after_double_neighbor.rb` (new), required from `lib/head_music.rb` beside the other guidelines.
+   - Includes `DissonanceFigureDetection`.
+   - `strength :weak, because:` Salzer and Schachter call the other continuations less good rather than wrong.
+   - `marks`: none without a companion voice. For each double neighbor with a following note, compare the melodic interval from the fourth note to the fifth with the interval from the third to the fourth. Unless it is a step in the same direction, `Mark.for_all` the fourth and fifth notes.
+   - A double neighbor that ends the line has no fifth note and earns no mark.
+4. Guides: add the guideline to the secondary tier of
+   - `lib/head_music/style/guides/third_species_harmony.rb`
+   - `lib/head_music/style/guides/fifth_species_harmony.rb`
+   - `lib/head_music/style/guides/free_species_harmony.rb`
+   It is not added to `DIMINUTION_HARMONIC_CRAFT`, which would carry it into second species and triple meter, where the figure is not recognized.
+5. Strings
+   - `lib/head_music/locales/en.yml`: `continue_after_double_neighbor` with a name, an instruction ("Leave a double neighbor by step, continuing in the direction of its last step.") and a default violation.
+   - `lib/head_music/locales/en_GB.yml`: the same entry spelled "neighbour".
+   - `spec/head_music/style/guide_item_strings_spec.rb`: a row for the new guideline.
+   - `bundle exec rake style:snapshot_english` to regenerate `spec/fixtures/style/english_strings.yml`, and read the diff: only the new strings should appear.
+6. `bundle exec rake style:snapshot_corpus_fitness`, and read the diff of `spec/fixtures/style/corpus_fitness.json`. Expected: the item count of every gated row of the changed guides and their composites rises by one, some grades rise slightly because the secondary tier's weight is shared among one more item, and no row falls unless it holds a real double neighbor with a poor continuation. List any row that falls in this story.
+7. `CHANGELOG.md`, Added under Unreleased: the guideline, its source, its strength, the guides it joins, and the corpus shift in the form the `PreferLongBeforeShort` entry uses.
+8. Add a "BardTheory follow-up" list to this story naming the lessons and dictionary entries to bring into line.
+
+### Data model changes
+
+None.
+
+### Tests
+
+`spec/head_music/style/guidelines/continue_after_double_neighbor_spec.rb` (new), with ABC lines over a held cantus firmus note, in the harness the third species dissonance spec uses:
+
+| Line | Expectation |
+| --- | --- |
+| upper neighbor first, then a step on in the direction of the last step | no mark |
+| lower neighbor first, then a step on | no mark |
+| upper neighbor first, then a step that turns back | one mark, on the fourth and fifth notes |
+| lower neighbor first, then a step that turns back | one mark |
+| a leap after the figure | one mark |
+| the fourth note repeated | one mark |
+| the figure ends the line | no mark |
+| the double neighbor shape with a dissonant first note (Fux figure 55 bar 8) | no mark: it is not a double neighbor |
+| no companion voice | no mark |
+| Salzer & Schachter Example 3-19 a, b, c, d | none, none, one, one |
+| the figure in mixed note values, the fifth note a half note | judged as in quarters |
+
+Each negative line fails for one reason only: write the harmonic intervals beside it and confirm that every other clause holds.
+
+`spec/head_music/style/guideline/dissonance_figures_spec.rb`:
+
+- `double_neighbors` returns the four notes of a completed figure, and nothing for a line without one or for a figure whose closing note is dissonant.
+- The cambiata followed by a step on, a step that turns back, and a leap: true, false, false for the dissonant note. Add whichever of the three the file lacks.
+
+Guide specs (`third_species_harmony_spec.rb`, `fifth_species_harmony_spec.rb`, `free_species_harmony_spec.rb`): the guideline is in the secondary tier. The second species and triple-meter harmony specs: it is absent.
+
+The Fux fixtures: the existing diagonal and corpus specs pass unchanged apart from the regenerated snapshot, which shows that no primary mark moved.
+
+Check the new examples by deleting each clause of the guideline in turn; each deletion should fail an example.
+
+### Risks
+
+- **Example 3-19 has to be transcribed from the scan.** It is on printed p. 62 (PDF p. 79), with the figure in a C clef. Render at 300 dpi and read the clef and pitches twice before pinning; a misread clef moves every note.
+- **Free species.** `FreeDissonanceTreatment` builds its own figures for either voice and calls the companion `cantus_firmus`. Confirm that the mixin's `dissonant_with_cantus?` gives the same answer for the graded voice there, and pin it with a spec in which the lower voice carries the double neighbor.
+- **The snapshot is a decision, not a refactor.** Regenerating it changes hundreds of rows by item count. Read the diff for any fall in fitness before accepting it.
+- **A rest after the figure does not break it**, as with the other figure predicates. Whether a rest should break a figure is recorded on the eighteenth-century guide story and is not settled here.
+- **RubyCritic.** The new guideline is small, but `rake validate` fails on a D or F file, so run it before committing.
