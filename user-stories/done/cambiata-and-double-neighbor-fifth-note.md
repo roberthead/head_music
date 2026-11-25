@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-11-24T13:21:54-08:00
   activated_at: 2026-11-24T15:36:48-08:00
   planned_at:   2026-11-24T15:39:53-08:00
-  finished_at:
-  updated_at:   2026-11-24T16:03:53-08:00
+  finished_at:  2026-11-24T16:08:13-08:00
+  updated_at:   2026-11-24T16:08:13-08:00
 -->
 
 # Story: Settle the Fifth Note of the Cambiata and Double Neighbor
@@ -228,3 +228,11 @@ No behavioural bug was found. Mutating the guideline (dropping the step test, th
 2. The lower neighbor first, left by a leap, has an example, so criterion 5 is met.
 3. The CHANGELOG and "The pinned corpus" now say the rows rise by less than 0.0101.
 4. The figure has examples in half notes and in mixed half notes and quarters, each with a step on and a leap.
+
+## Learnings
+
+- **The pinned corpus found what the specs did not.** The guideline's own examples all passed while the first regeneration of `corpus_fitness.json` lowered five voices, each with the double neighbor's pitch shape in consonant whole notes (the opening of Fux's C ionian cantus firmus is one). A figure predicate that will be read by a secondary guideline needs a dissonance in it, not just the shape and consonant ends. Read the snapshot diff for falls before trusting a new figure-based item.
+- **The story's premise came from paraphrase, and the scan corrected it twice.** The story began by assuming the sources treat both figures alike, and it described Example 3-19 (d) as a step back (C–D–B–C–B). Read from the scan, (d) leaves by a third (C–D–B–C–A). Transcribe a cited example before writing criteria around it.
+- **Consonant downbeats settle an ambiguous clef.** Example 3-19's lower voice reads plausibly in tenor or alto clef at scan resolution. The tenor reading puts a diminished fifth on a downbeat that the authors call good, and the alto reading is consonant throughout.
+- **A guard that sibling guidelines carry can be dead here.** `return [] unless cantus_firmus&.notes&.any?` is reachable in guidelines that read intervals directly, but any guideline built on `DissonanceFigureDetection` finds nothing dissonant without a companion, so its figures are already empty. The Implementation Notes claimed that deleting the guard failed an example when it had not been tried; the review caught it. Next time, record the failing example beside each deletion.
+- **State a snapshot bound from the computed maximum.** "At most 0.010" was read off rounded output; the largest rise was 0.010035.
