@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T15:36:48-08:00
   planned_at:   2026-11-24T15:39:53-08:00
   finished_at:
-  updated_at:   2026-11-24T15:51:13-08:00
+  updated_at:   2026-11-24T16:02:06-08:00
 -->
 
 # Story: Settle the Fifth Note of the Cambiata and Double Neighbor
@@ -181,3 +181,43 @@ Each clause of the guideline was deleted in turn and failed at least one example
 - `third-species-guidelines` and `fifth-species-guidelines` lessons: add the double neighbor's continuation to the list of preferences.
 - The lesson for the mixed first, second, and third species exercise, if it lists the double neighbor: the same line.
 - Raise the head_music version BardTheory depends on once this is released; the guideline's strings are in en and en_GB.
+
+## Review
+
+Reviewed on 2026-11-24 at `c0f1885e`, with nothing uncommitted. An independent reader judged the criteria from the code; its findings below were each checked again before being kept. `bundle exec rake validate` exits 0 on this commit.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| 1 | The cambiata stays five notes and primary; `cambiata_dissonance?` unchanged | ✅ | `lib/head_music/style/guideline/dissonance_figures.rb:30-33` is untouched; the diff adds only lines 39-46 |
+| 2 | The double neighbor stays four notes; `double_neighbor_member?` unchanged | ✅ | `dissonance_figures.rb:35-37` and `:109-115` are untouched; the primary items give no mark to a figure with a poor continuation |
+| 3 | Secondary guideline: a step on earns none, a turn back one, a leap one, the end of the line none | ✅ | `lib/head_music/style/guidelines/continue_after_double_neighbor.rb:20-32`; `spec/head_music/style/guidelines/continue_after_double_neighbor_spec.rb:23, 29-36, 39-43, 53-57` |
+| 4 | In the four guides and absent from second species and triple meter; reads completed figures with a dissonant neighbor | ✅ | `third_species_harmony.rb:7`, `first_three_species_harmony.rb:13`, `fifth_species_harmony.rb:15`, `free_species_harmony.rb:25`; not in `DIMINUTION_HARMONIC_CRAFT`; pinned in `spec/head_music/style/guides/base_spec.rb:96-133` and the six guide specs; `dissonance_figures.rb:45` |
+| 5 | Specs for the double neighbor followed by a step on, a turn back, and a leap, with either neighbor first; the cambiata followed by the same three; Example 3-19 | ⚠️ | One case is missing: the lower neighbor first, left by a leap. The rest are present: upper first `:23, :29, :39`, lower first `:61-75`, Example 3-19 `:119-134`; cambiata in `spec/head_music/style/guideline/dissonance_figures_spec.rb:40-47, 96-103, 105-112` |
+| 6 | Fixtures keep their primary marks; new secondary marks listed | ✅ | `message_count` changes in no row of the snapshot, and no corpus voice is marked, as the story says |
+| 7 | Name, instruction, and violation in en and en_GB | ✅ | `lib/head_music/locales/en.yml:851-855`, `en_GB.yml:113-117`, spelled "neighbour" in all three strings |
+| 8 | Snapshot regenerated; falling rows listed | ✅ | Recomputed against the merge-base: 576 rows change, 224 of them in fitness, none falls |
+| 9 | CHANGELOG under Unreleased with the corpus shift | ✅ | `CHANGELOG.md:12-13`; the counts 576, 224, and 352 are right |
+| 10 | BardTheory follow-up listed | ✅ | The "BardTheory follow-up" section |
+
+### Findings
+
+No behavioural bug was found. Mutating the guideline (dropping the step test, the direction test, the fifth-note check, or the dissonant-neighbor clause, or marking only the fifth note) fails at least one example each time.
+
+1. **The companion-voice guard is unreachable, and the Implementation Notes say otherwise.** With `return [] unless cantus_firmus&.notes&.any?` removed from `continue_after_double_neighbor.rb:13`, all 16 examples of the guideline's spec still pass, including "with no other voice". With no companion nothing is dissonant, so `double_neighbors` already rejects every shape as consonant throughout. "Checked by deletion" lists the missing companion voice among the clauses whose deletion failed an example; that one does not. Delete the guard, or keep it and correct the note.
+2. **Criterion 5 lacks one example**: the lower neighbor first, left by a leap, such as `e d f e|g4` over `C4|E4`. The code handles it; only the spec is missing.
+3. **"Rise by at most 0.010" is true only when rounded.** The largest rise is 0.010034890327. The phrase is in `CHANGELOG.md:12` and in "The pinned corpus" above.
+4. **The figure is never in other note values in a spec.** Only the continuation is a half note (`:77-91`), while criterion 4 says "whatever the note values". Probes with the figure in half notes, eighths, and mixed values behave correctly.
+
+### Behaviour worth knowing, none of it against the story
+
+- Two figures in a row: in `e f d e|d f e d|c4` the first is marked, because the second, lower-neighbor-first figure opens with a step that turns back. Two figures that each step on earn nothing.
+- A closing note under a rest in the companion counts as consonant, as it does for the existing predicates.
+- A chromatic alteration of the closing note (E to E♯) is not a step and is marked.
+- One mark costs a harmony guide 0.008 to 0.009 of its fitness.
+
+### Not confirmed
+
+- That the five voices lowered by the first regeneration are four cantus firmi and one first species counterpoint. Five voices are marked without the dissonant-neighbor clause; their roles were not checked.
+- The Open Music Theory and Magnuson quotations. Example 3-19 was read again from the scan and agrees with the table above.
