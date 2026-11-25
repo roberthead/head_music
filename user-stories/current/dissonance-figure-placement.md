@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T18:42:00-08:00
   planned_at:   2026-11-24T19:15:02-08:00
   finished_at:
-  updated_at:   2026-11-24T19:15:02-08:00
+  updated_at:   2026-11-25T13:03:41-08:00
 -->
 
 # Story: Place the Cambiata and Double Neighbor in the Bar
@@ -17,14 +17,15 @@ SO THAT a leap from a dissonance is not excused by a shape that begins on the wr
 
 ## Acceptance Criteria
 
-- **Placement, primary.** The dissonance guidelines (`ThirdSpeciesDissonanceTreatment`, `FloridDissonanceTreatment`, `FreeDissonanceTreatment`) recognize a double neighbor only where it begins on a downbeat, and a nota cambiata only where it begins on an accented beat. A figure placed elsewhere excuses nothing: each of its dissonant notes that is not a passing or neighbor tone in its own right earns the guideline's existing mark. No new string is needed for this
+- **Placement, primary.** The dissonance guidelines (`ThirdSpeciesDissonanceTreatment`, `FloridDissonanceTreatment`, `FreeDissonanceTreatment`) recognize a double neighbor only where it begins on a downbeat, and a nota cambiata only where it begins on an accented beat. A figure placed elsewhere excuses nothing: each of its dissonant notes that is not a passing or neighbor tone in its own right earns the guideline's existing mark. No new string key is needed for this
 - Placement is read from where the figure's dissonant notes fall, not from where its first note is attacked, so a first note tied over a barline does not move the figure. Fux's figure 87a, whose first note is attacked on beat 3 and tied into the bar that holds the dissonance on beat 2, stays a cambiata begun on a downbeat and earns no mark of either kind
 - **Placement, secondary.** A new weak secondary guideline prefers the cambiata begun on a downbeat: a cambiata begun on the bar's other accented beat, whose dissonance is treated, earns one mark. It is in every harmony guide that recognizes the cambiata: third species, first three species, fifth species, and free species. It has a name, an instruction, and a violation message in en, and in en_GB wherever the spelling differs
-- **Note values.** In `FloridDissonanceTreatment` and `FreeDissonanceTreatment`, the dissonant notes of a cambiata and of a double neighbor must be quarter notes. A half note or an eighth in that place leaves the dissonance untreated. The figure's consonant notes may take any value
+- **Note values.** In `FloridDissonanceTreatment` and `FreeDissonanceTreatment`, the dissonant notes of a cambiata and of a double neighbor must be quarter notes. A half note or an eighth in that place leaves the dissonance untreated. The figure's consonant notes may take any value. `ThirdSpeciesDissonanceTreatment` reads placement only and no note values
 - **The half note.** In the same two guidelines, a dissonance attacked as a half note or longer is treated only as a passing tone. A half-note neighbor tone, which the second species guide already marks, is marked in fifth species, first three species, and free species too
 - Free species follows fifth species in all of the above, read in whichever voice carries the figure. A dissonance the other voice explains with a figure of its own is still unmarked
+- **Messages.** The instruction and violation of the three dissonance guidelines say what they now ask: where each figure begins, that a dissonant half note may only pass, and, in the florid guideline, that a neighbor tone is accepted. Each guideline keeps one violation message and its existing keys, in en and en_GB
 - Rhythm is read from positions and the meter, not from beat numbers
-- Specs cover each figure beginning on every beat of a 4/4 bar, with both neighbors dissonant and with one; a figure whose dissonant note is a half note and one whose dissonant note is an eighth; a half-note neighbor tone against a half-note passing tone; figure 87a's long first note; and a figure in the lower voice of a free species pair
+- Specs cover the double neighbor beginning on every beat of a 4/4 bar, with both neighbors dissonant and with one; the cambiata beginning on beats 1, 2, and 3 in all three guidelines, and on beat 4 in free species only, against a moving voice; a figure whose dissonant note is a half note and one whose dissonant note is an eighth; a half-note neighbor tone against a half-note passing tone; figure 87a's long first note; and a figure in the lower voice of a free species pair
 - The existing fixtures of published third and fifth species examples keep their marks, primary and secondary. The research found nothing that should move; any row that does is explained in the story
 - The pinned corpus snapshot is regenerated. Any row whose fitness falls is listed in the story
 - CHANGELOG entry under Unreleased, naming each shape that passed before and is now marked, and stating the shift in the pinned corpus
@@ -101,6 +102,12 @@ Not checked: Open Music Theory's fifth species chapter, and any second source fo
 
 - **Placement is read from the dissonant notes** (Claude's reading, put to Rob with the figure 87a finding and not disputed). A cambiata begins on a downbeat when its dissonance falls on the weak beat after the downbeat, whenever its first note was attacked. The double neighbor is read the same way: its neighbors fall on the two beats after the downbeat and it returns within the bar. `e2 f d | e`, a half-note main tone with the neighbors on beats 3 and 4 and the return on the next downbeat, is therefore not a double neighbor begun on the downbeat. This last case was not put to Rob as its own question.
 
+- **A cambiata from beat 4 is specified in free species only** (Rob, 2026-11-24, at planning). The figure's second and fifth notes are the same pitch (C–B–G–A–B). Begun on beat 4, both lie in one bar over one cantus firmus note, so a dissonant second note makes the fifth dissonant and the shape is no cambiata. It exists only against a moving voice, where its dissonance is attacked on a downbeat and is marked already.
+
+- **Third species reads placement only** (Rob, 2026-11-24, at planning). `ThirdSpeciesDissonanceTreatment` still accepts a double neighbor in eighths from the downbeat (`e/ f/ d/ e/ c2` over C) and a cambiata whose dissonance is a half note (`c'2 b2 | g a b2`). The third species melody guide marks both rhythms, and the harmony guides leave rhythm to the melody guides.
+
+- **The existing messages are reworded in this story** (Rob, 2026-11-24, at planning). The florid violation, "Treat each dissonance as a passing tone, cambiata, or double neighbor on a weak beat.", leaves out the neighbor tone and would be the sentence a student reads beside a marked half-note neighbor. One message per guideline, no new keys.
+
 ## Implementation Plan
 
 Planned on 2026-11-24 at `f68b35b0`.
@@ -126,7 +133,7 @@ A throwaway prototype of the rules below was loaded over the three guidelines, o
 
 ### Steps
 
-Three commits, one cause each, with the corpus snapshot regenerated and read after each.
+Four commits, one cause each, with the corpus snapshot regenerated and read after each of the first three.
 
 1. **Placement.**
    - `lib/head_music/style/guideline/dissonance_figures.rb`: add `cambiatas`, the five notes of each cambiata whose second note is dissonant, and `double_neighbors_with(note)`, the double neighbors in which the note is a neighbor. `cambiata_dissonance?`, `double_neighbor_member?`, and `escape_tone?` do not change.
@@ -147,9 +154,20 @@ Three commits, one cause each, with the corpus snapshot regenerated and read aft
    - `lib/head_music/locales/en.yml`: `begin_cambiata_on_downbeat` with a name ("Cambiata from the downbeat"), an instruction ("Begin a nota cambiata on the downbeat rather than on the bar's other accented beat."), and a default violation ("Begin the nota cambiata on the downbeat."). No en_GB entry: no word in the three is spelled differently.
    - `spec/head_music/style/guide_item_strings_spec.rb`: a row. `bundle exec rake style:snapshot_english`, and read the diff: only the new strings.
    - Snapshot the corpus. Expected, as with `ContinueAfterDoubleNeighbor`: the 576 gated rows of the four harmony guides and their four composites gain an item, some rise slightly, and none falls, since the corpus's two cambiatas both begin on a downbeat. Compute the counts and the largest rise from the diff.
-4. `CHANGELOG.md` under Unreleased, written from the captured diffs: a Changed entry naming each shape that passed and is now marked (the double neighbor off the downbeat, the cambiata begun on a weak beat, either figure with a half-note or eighth-note dissonance in the florid and free guidelines, the half-note neighbor tone in fifth species, first three species, and free species), an Added entry for the guideline and the new `DissonanceFigures` methods, and the corpus shift.
-5. Record in this story: Implementation Notes with the measuring commit beside each number, and a "BardTheory follow-up" list. Start from `grep -rl "cambiata\|double neighbor\|neighbor tone" ../bardtheory/db/seeds`: the dictionary entries (`d.yml`, `n.yml`, `t.yml`), the `the-cambiata`, `third-species-introduction`, and `florid-counterpoint` lessons, the two species guidelines lessons, and the third species, fifth species, combined, and free species exercises that name the figures.
-6. `bundle exec rubocop -a`, then `bundle exec rake validate`, judged by its exit status.
+4. **Messages.** Reword the three guidelines' strings in `lib/head_music/locales/en.yml` and `en_GB.yml` (neighbour, crotchet, minim), update their rows in `spec/head_music/style/guide_item_strings_spec.rb`, and regenerate `spec/fixtures/style/english_strings.yml`. No other locale carries these keys. The wording below is a draft for Rob to edit before the commit:
+
+   | Guideline | String | Draft |
+   | --- | --- | --- |
+   | Third species | instruction | Reach every dissonance as a passing tone, a neighbor tone, a cambiata begun on an accented beat, or a double neighbor begun on the downbeat. |
+   | Third species | violation | Treat each dissonance as a passing tone, a neighbor tone, a cambiata begun on an accented beat, or a double neighbor begun on the downbeat. |
+   | Florid | instruction | Off the downbeat, reach every dissonance as a passing tone, a neighbor tone shorter than a half note, or a quarter note in a cambiata begun on an accented beat or in a double neighbor begun on the downbeat. |
+   | Florid | violation | Treat each dissonance as a passing tone, a neighbor tone shorter than a half note, or a quarter note in a cambiata begun on an accented beat or in a double neighbor begun on the downbeat. |
+   | Free | instruction | Explain every dissonance between the two voices: in either voice as a passing tone, a neighbor tone shorter than a half note, or a quarter note in a cambiata begun on an accented beat or in a double neighbor begun on the downbeat; or as a suspension prepared and resolved down by step. Attack no dissonance on a downbeat. |
+   | Free | violation | unchanged: it says "a figure in either voice" and names none |
+
+5. `CHANGELOG.md` under Unreleased, written from the captured diffs: a Changed entry naming each shape that passed and is now marked (the double neighbor off the downbeat, the cambiata begun on a weak beat, either figure with a half-note or eighth-note dissonance in the florid and free guidelines, the half-note neighbor tone in fifth species, first three species, and free species), the reworded messages, an Added entry for the guideline and the new `DissonanceFigures` methods, and the corpus shift.
+6. Record in this story: Implementation Notes with the measuring commit beside each number, and a "BardTheory follow-up" list. Start from `grep -rl "cambiata\|double neighbor\|neighbor tone" ../bardtheory/db/seeds`: the dictionary entries (`d.yml`, `n.yml`, `t.yml`), the `the-cambiata`, `third-species-introduction`, and `florid-counterpoint` lessons, the two species guidelines lessons, and the third species, fifth species, combined, and free species exercises that name the figures.
+7. `bundle exec rubocop -a`, then `bundle exec rake validate`, judged by its exit status.
 
 ### Data model changes
 
@@ -189,7 +207,9 @@ ABC lines over a held cantus firmus note, as in `continue_after_double_neighbor_
 
 `spec/head_music/style/guideline/dissonance_figures_spec.rb`: `cambiatas`, with and without a dissonant second note; `double_neighbors_with`; `passing_run?` against a neighbor run.
 
-Guide specs: the guideline is in the secondary tier of the four guides and absent from second species and triple meter; `base_spec.rb`'s item lists and `guide_item_strings_spec.rb` gain it.
+`third_species_dissonance_treatment_spec.rb` also: `e/ f/ d/ e/ c2` and `c'2 b2 | g a b2`, both unmarked, since third species reads no note values.
+
+Guide specs: the guideline is in the secondary tier of the four guides and absent from second species and triple meter; `base_spec.rb`'s item lists and `guide_item_strings_spec.rb` gain it. `guide_item_strings_spec.rb` also pins the reworded violations.
 
 The Fux fixture specs and `guide_corpus_fitness_spec.rb` pass against the regenerated snapshot.
 
@@ -197,12 +217,12 @@ Checked by deletion: remove each clause in turn (the accented onset, the downbea
 
 ### Risks and readings
 
-- **A cambiata cannot begin on beat 4 against a whole-note cantus firmus.** Its second and fifth notes are the same pitch (C–B–G–A–B), and from beat 4 both lie in one bar over one cantus note, so a dissonant second note makes the fifth dissonant and the shape is no cambiata. The placement exists only against a moving voice, where its dissonance is attacked on a downbeat and is marked already. Put to Rob as a gap in the specs criterion.
-- **Third species reads no note values.** In `ThirdSpeciesDissonanceTreatment` a double neighbor in eighths from the downbeat and a cambiata with a half-note dissonance stay unmarked, as the prototype showed. The harmony guides leave rhythm to the melody guides (`species_harmony.rb`). Put to Rob as a gap.
+- **A cambiata cannot begin on beat 4 against a whole-note cantus firmus.** Its second and fifth notes are the same pitch (C–B–G–A–B), and from beat 4 both lie in one bar over one cantus note, so a dissonant second note makes the fifth dissonant and the shape is no cambiata. The placement exists only against a moving voice, where its dissonance is attacked on a downbeat and is marked already. The specs criterion is amended to say so.
+- **Third species reads no note values.** In `ThirdSpeciesDissonanceTreatment` a double neighbor in eighths from the downbeat and a cambiata with a half-note dissonance stay unmarked, as the prototype showed. The harmony guides leave rhythm to the melody guides (`species_harmony.rb`). Rob chose to leave it; the third species spec pins both lines as unmarked.
 - **The secondary guideline asks for a quarter-note dissonance in every guide**, so it never adds a mark to a figure the primary guideline has refused for its note value.
 - **One eighth or half note among two dissonant neighbors unseats the whole double neighbor** (Claude's reading). The quarter-note neighbor then leaps from or to a dissonance with no figure to excuse it, as in the Decision on misplaced figures.
 - **Meters other than 4/4 and 2/2.** In 3/2 the meter calls only the downbeat strong, so a cambiata begun on the second or third half-note beat would be marked. No fixture is in 3/2. Pin 4/4 and 2/2 and record the rest.
 - **A rest inside a figure does not break it**, as before. Placement is read from the dissonant note alone, so a rest before it changes nothing. That question stays with the eighteenth-century guide story.
-- **The messages do not describe the new marks.** The florid guideline's violation is "Treat each dissonance as a passing tone, cambiata, or double neighbor on a weak beat.", which leaves out the neighbor tone and says nothing of note values. Put to Rob as a gap.
+- **The reworded messages are long.** The florid violation grows from 15 words to 36. BardTheory shows it beside a mark, so check how it reads there, and shorten the draft if Rob prefers a general sentence.
 - **RubyCritic.** `free_dissonance_treatment.rb` is already 132 lines. Keep the new logic in `FigurePlacement` and check the file's grade before committing.
 - **Release.** v24.0.0 is the last tag, and shapes it passed are marked after this story. Whether that makes the next release major is settled at release.
