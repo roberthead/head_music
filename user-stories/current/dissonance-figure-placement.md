@@ -2,9 +2,9 @@
 metadata:
   created_at:   2026-11-24T15:35:04-08:00
   activated_at: 2026-11-24T18:42:00-08:00
-  planned_at:
+  planned_at:   2026-11-24T19:15:02-08:00
   finished_at:
-  updated_at:   2026-11-24T19:01:09-08:00
+  updated_at:   2026-11-24T19:15:02-08:00
 -->
 
 # Story: Place the Cambiata and Double Neighbor in the Bar
@@ -103,4 +103,106 @@ Not checked: Open Music Theory's fifth species chapter, and any second source fo
 
 ## Implementation Plan
 
-[to be filled in by /stories plan]
+Planned on 2026-11-24 at `f68b35b0`.
+
+`DissonanceFigures` keeps reading pitch shape and consonance. A new module, `HeadMusic::Style::Guideline::FigurePlacement`, reads where a figure's notes fall from their positions and the meter, and the three dissonance guidelines ask it before they accept a cambiata or a double neighbor. The florid and free guidelines also ask it for note values. A new weak secondary guideline, `BeginCambiataOnDownbeat`, follows the pattern of `ContinueAfterDoubleNeighbor`, the closest existing feature.
+
+### How placement is read
+
+A figure's beginning is found from a dissonant note by forward arithmetic: the **accented onset** of a note is the strong beat in its bar from which one of the note's own value reaches the note's position, or nil. In 4/4 a quarter note on beat 2 has the downbeat as its onset, one on beat 4 has beat 3, and one on beat 3 has none. A strong beat is `position.strong?`, so cut time reads the same way with no beat numbers.
+
+- **Cambiata.** Placed when its dissonant second note has an accented onset. Begun on the downbeat when that onset is the downbeat.
+- **Double neighbor.** Placed when its first neighbor's accented onset is the downbeat and its closing note is attacked in the same bar.
+- The first note of either figure is never asked where it was attacked, which is what keeps figure 87a.
+
+Subtracting from a position is not an option. `position.advance(subticks:)` with a negative number does not carry across a barline: a whole note on 3:1 gives `3:-3:000`, which still answers `strength` with 60.
+
+### Measured before planning
+
+A throwaway prototype of the rules below was loaded over the three guidelines, outside the repository.
+
+- The eleven lines of the research table and seven more, in 4/4 and in 2/2, earn the marks the Decisions call for. `g e f d | e` is marked on F and D, `e2 f d | e` on F and D, `e f d2 | e` on F and D in third species (the return is in the next bar), `c'2 b2 | g a b2` on B in the florid and free guidelines only, `e2 f2 | e` on F in the florid and free guidelines only, and `e2 f2 | g` and the 87a shape on nothing. The marks in 2/2 are the marks in 4/4.
+- Over the pinned corpus, 0 of 5,808 rows differ from `spec/fixtures/style/corpus_fitness.json`. With cambiata recognition switched off in the same prototype, twelve rows fall, all of them Fux's figures 55 and 87a, so the prototype was live.
+
+### Steps
+
+Three commits, one cause each, with the corpus snapshot regenerated and read after each.
+
+1. **Placement.**
+   - `lib/head_music/style/guideline/dissonance_figures.rb`: add `cambiatas`, the five notes of each cambiata whose second note is dissonant, and `double_neighbors_with(note)`, the double neighbors in which the note is a neighbor. `cambiata_dissonance?`, `double_neighbor_member?`, and `escape_tone?` do not change.
+   - `lib/head_music/style/guideline/figure_placement.rb` (new), required from `lib/head_music.rb` after `dissonance_figures`: `accented_onset(note)`, `cambiata_placed?(dissonance)`, `cambiata_from_downbeat?(dissonance)`, `double_neighbor_placed?(figure)`, and `leaping_figure?(figures, note, quarter_dissonances:)`, which is true when the note is the dissonance of a placed cambiata or a neighbor of a placed double neighbor. It takes the figures as an argument so the free guideline can ask about either voice.
+   - `lib/head_music/style/guidelines/third_species_dissonance_treatment.rb`: `recognized_figure?` becomes `super || neighbor_tone?(note) || leaping_figure?(dissonance_figures, note, quarter_dissonances: false)`.
+   - `lib/head_music/style/guidelines/florid_dissonance_treatment.rb` and `free_dissonance_treatment.rb`: the same call in place of `cambiata_dissonance? || double_neighbor_member?`, still with `quarter_dissonances: false` in this commit.
+   - `bundle exec rake style:snapshot_corpus_fitness`. Expected: no diff.
+2. **Note values**, in the florid and free guidelines only.
+   - `figure_placement.rb`: `quarter_note?(note)`, an untied quarter, and `half_note_or_longer?(note)`, by total duration. With `quarter_dissonances: true` a cambiata needs its dissonance to be a quarter note, and a double neighbor needs every dissonant neighbor to be one.
+   - `dissonance_figures.rb`: `passing_run?(note)`, the one-direction half of `consonant_run?`, which is then written as `passing_run?` or a run that returns to its first pitch.
+   - `florid_dissonance_treatment.rb`: after the downbeat test, `return passing_tone?(note) if half_note_or_longer?(note)`, and `quarter_dissonances: true`.
+   - `free_dissonance_treatment.rb`: `return figures.passing_run?(note) if half_note_or_longer?(note)` first in `explained_by_figure?`, and `quarter_dissonances: true`. The rule reaches only a note that attacks the dissonance; a half note that is consonant when attacked and dissonant later is the suspension rule's, as now.
+   - Snapshot again. Expected: no diff.
+3. **The secondary guideline.**
+   - `lib/head_music/style/guidelines/begin_cambiata_on_downbeat.rb` (new), required beside `continue_after_double_neighbor`. Includes `DissonanceFigureDetection` and `FigurePlacement`. `strength :weak, because:` Salzer and Schachter say only that the first quarter is in general the better beginning. One `Mark.for_all` over the five notes of each cambiata whose dissonance is a quarter note with an accented onset that is not the downbeat. No companion-voice guard: with no companion nothing is dissonant, so `cambiatas` is empty.
+   - `dissonance_figure_detection.rb`: delegate `cambiatas`.
+   - Guides, secondary tier, beside `ContinueAfterDoubleNeighbor`: `third_species_harmony.rb`, `first_three_species_harmony.rb`, `fifth_species_harmony.rb`, `free_species_harmony.rb`. Not `DIMINUTION_HARMONIC_CRAFT`, which reaches second species and triple meter.
+   - `lib/head_music/locales/en.yml`: `begin_cambiata_on_downbeat` with a name ("Cambiata from the downbeat"), an instruction ("Begin a nota cambiata on the downbeat rather than on the bar's other accented beat."), and a default violation ("Begin the nota cambiata on the downbeat."). No en_GB entry: no word in the three is spelled differently.
+   - `spec/head_music/style/guide_item_strings_spec.rb`: a row. `bundle exec rake style:snapshot_english`, and read the diff: only the new strings.
+   - Snapshot the corpus. Expected, as with `ContinueAfterDoubleNeighbor`: the 576 gated rows of the four harmony guides and their four composites gain an item, some rise slightly, and none falls, since the corpus's two cambiatas both begin on a downbeat. Compute the counts and the largest rise from the diff.
+4. `CHANGELOG.md` under Unreleased, written from the captured diffs: a Changed entry naming each shape that passed and is now marked (the double neighbor off the downbeat, the cambiata begun on a weak beat, either figure with a half-note or eighth-note dissonance in the florid and free guidelines, the half-note neighbor tone in fifth species, first three species, and free species), an Added entry for the guideline and the new `DissonanceFigures` methods, and the corpus shift.
+5. Record in this story: Implementation Notes with the measuring commit beside each number, and a "BardTheory follow-up" list. Start from `grep -rl "cambiata\|double neighbor\|neighbor tone" ../bardtheory/db/seeds`: the dictionary entries (`d.yml`, `n.yml`, `t.yml`), the `the-cambiata`, `third-species-introduction`, and `florid-counterpoint` lessons, the two species guidelines lessons, and the third species, fifth species, combined, and free species exercises that name the figures.
+6. `bundle exec rubocop -a`, then `bundle exec rake validate`, judged by its exit status.
+
+### Data model changes
+
+None.
+
+### Tests
+
+ABC lines over a held cantus firmus note, as in `continue_after_double_neighbor_spec.rb`. The harmonic intervals are written beside each negative line, and each breaks one clause.
+
+`spec/support/dissonance_figure_placement.rb` (new): a shared example group run by the third species, florid, and free specs.
+
+| Line | Expectation |
+| --- | --- |
+| double neighbor from beat 1, both neighbors dissonant; and with one | no mark |
+| double neighbor from beat 2, both dissonant | both neighbors marked |
+| double neighbor from beat 2, one dissonant | one mark |
+| double neighbor from beat 3 and from beat 4, the downbeat neighbor consonant | the other neighbor marked |
+| first neighbor on beat 2, second a half note, return on the next downbeat | marked: only the same-bar clause fails |
+| cambiata from beat 1 | no mark |
+| cambiata from beat 2 | the dissonance marked |
+| cambiata from beat 3 | no mark |
+| figure 87a's shape, first note attacked on beat 3 and tied over | no mark |
+| one accepted and one refused line of each figure in 2/2 | as in 4/4 |
+
+`florid_dissonance_treatment_spec.rb` and `free_dissonance_treatment_spec.rb`:
+
+- a double neighbor from beat 3 whose downbeat neighbor is dissonant: both marked;
+- `c'2 b2 | g a b2`, a cambiata with a half-note dissonance: marked here, and unmarked in the third species spec, so only the value clause fails;
+- `e/ f/ d/ e/ c2`, a double neighbor in eighths from the downbeat: both neighbors marked;
+- a double neighbor with one dissonant neighbor a quarter and the other an eighth: both marked;
+- a consonant first note of any length, and a consonant neighbor: no mark;
+- `e2 f2 | e`, marked, against `e2 f2 | g`, unmarked; a quarter-note neighbor, unmarked.
+
+`free_dissonance_treatment_spec.rb` also: each figure in the lower voice of a pair, placed and misplaced; a cambiata from beat 4 against a moving voice, marked on the downbeat; and a leap in one voice against a placed cambiata in the other, unmarked.
+
+`spec/head_music/style/guidelines/begin_cambiata_on_downbeat_spec.rb` (new): from the downbeat, none; from the other accented beat, one mark over five notes; from a weak beat, none, since the primary guideline marks it; figure 87a's shape, none; the shape with a consonant second note, none; a half-note dissonance, none; 2/2; the lower voice of a free pair; no companion, none.
+
+`spec/head_music/style/guideline/dissonance_figures_spec.rb`: `cambiatas`, with and without a dissonant second note; `double_neighbors_with`; `passing_run?` against a neighbor run.
+
+Guide specs: the guideline is in the secondary tier of the four guides and absent from second species and triple meter; `base_spec.rb`'s item lists and `guide_item_strings_spec.rb` gain it.
+
+The Fux fixture specs and `guide_corpus_fitness_spec.rb` pass against the regenerated snapshot.
+
+Checked by deletion: remove each clause in turn (the accented onset, the downbeat for the double neighbor, the same bar, the quarter note, the half-note rule in each guideline, and the dissonant second note in `cambiatas`) and record the example that fails beside each.
+
+### Risks and readings
+
+- **A cambiata cannot begin on beat 4 against a whole-note cantus firmus.** Its second and fifth notes are the same pitch (C–B–G–A–B), and from beat 4 both lie in one bar over one cantus note, so a dissonant second note makes the fifth dissonant and the shape is no cambiata. The placement exists only against a moving voice, where its dissonance is attacked on a downbeat and is marked already. Put to Rob as a gap in the specs criterion.
+- **Third species reads no note values.** In `ThirdSpeciesDissonanceTreatment` a double neighbor in eighths from the downbeat and a cambiata with a half-note dissonance stay unmarked, as the prototype showed. The harmony guides leave rhythm to the melody guides (`species_harmony.rb`). Put to Rob as a gap.
+- **The secondary guideline asks for a quarter-note dissonance in every guide**, so it never adds a mark to a figure the primary guideline has refused for its note value.
+- **One eighth or half note among two dissonant neighbors unseats the whole double neighbor** (Claude's reading). The quarter-note neighbor then leaps from or to a dissonance with no figure to excuse it, as in the Decision on misplaced figures.
+- **Meters other than 4/4 and 2/2.** In 3/2 the meter calls only the downbeat strong, so a cambiata begun on the second or third half-note beat would be marked. No fixture is in 3/2. Pin 4/4 and 2/2 and record the rest.
+- **A rest inside a figure does not break it**, as before. Placement is read from the dissonant note alone, so a rest before it changes nothing. That question stays with the eighteenth-century guide story.
+- **The messages do not describe the new marks.** The florid guideline's violation is "Treat each dissonance as a passing tone, cambiata, or double neighbor on a weak beat.", which leaves out the neighbor tone and says nothing of note values. Put to Rob as a gap.
+- **RubyCritic.** `free_dissonance_treatment.rb` is already 132 lines. Keep the new logic in `FigurePlacement` and check the file's grade before committing.
+- **Release.** v24.0.0 is the last tag, and shapes it passed are marked after this story. Whether that makes the next release major is settled at release.
