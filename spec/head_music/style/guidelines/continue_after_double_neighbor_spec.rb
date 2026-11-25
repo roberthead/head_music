@@ -71,6 +71,45 @@ describe HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor do
 
       it { expect(assessment.marks_count).to eq 1 }
     end
+
+    context "when the line leaps on" do
+      let(:upper) { "e d f e|g4|]" }
+      let(:lower) { "C4|E4|]" }
+
+      it { expect(assessment.marks_count).to eq 1 }
+    end
+  end
+
+  context "when the figure is in half notes" do
+    let(:lower) { "C4|C4|D4|]" }
+
+    context "with a step on" do
+      let(:upper) { "e2 f2|d2 e2|f4|]" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "with a leap" do
+      let(:upper) { "e2 f2|d2 e2|a4|]" }
+
+      it { expect(assessment.marks_count).to eq 1 }
+    end
+  end
+
+  context "when the figure mixes half notes and quarters" do
+    let(:lower) { "C4|C2 D2|]" }
+
+    context "with a step on" do
+      let(:upper) { "e2 f d|e2 f2|]" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "with a leap" do
+      let(:upper) { "e2 f d|e2 a2|]" }
+
+      it { expect(assessment.marks_count).to eq 1 }
+    end
   end
 
   context "when the continuation is a half note" do

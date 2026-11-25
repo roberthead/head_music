@@ -10,8 +10,6 @@ class HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor < HeadMusic::Sty
   strength :weak, because: "Salzer and Schachter call the other continuations less good rather than wrong"
 
   def marks
-    return [] unless cantus_firmus&.notes&.any?
-
     stalled_exits.map { |exit| HeadMusic::Style::Mark.for_all(exit) }
   end
 

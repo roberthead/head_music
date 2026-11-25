@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T15:36:48-08:00
   planned_at:   2026-11-24T15:39:53-08:00
   finished_at:
-  updated_at:   2026-11-24T16:02:06-08:00
+  updated_at:   2026-11-24T16:03:53-08:00
 -->
 
 # Story: Settle the Fifth Note of the Cambiata and Double Neighbor
@@ -162,11 +162,11 @@ The first regeneration of the pinned corpus lowered five voices, none of them a 
 
 ### The pinned corpus
 
-No row falls. All 576 gated rows of the four harmony guides and their four composites gain one item; 224 rise by at most 0.010 because the secondary tier's weight is shared among one more item, and 352 move in item count only. No published voice in the corpus holds a double neighbor with a dissonant neighbor, so none is marked.
+No row falls. All 576 gated rows of the four harmony guides and their four composites gain one item; 224 rise by less than 0.0101 because the secondary tier's weight is shared among one more item, and 352 move in item count only. No published voice in the corpus holds a double neighbor with a dissonant neighbor, so none is marked.
 
 ### Checked by deletion
 
-Each clause of the guideline was deleted in turn and failed at least one example: the step, the direction, the missing fifth note, and the missing companion voice. So was the dissonant-neighbor clause in `double_neighbors`.
+Each clause of the guideline was deleted in turn and failed at least one example: the step, the direction, and the missing fifth note. So was the dissonant-neighbor clause in `double_neighbors`. A guard for a missing companion voice failed none and was removed after review: with no companion nothing is dissonant, so `double_neighbors` is already empty, and the "with no other voice" example pins that.
 
 ### Not done
 
@@ -221,3 +221,10 @@ No behavioural bug was found. Mutating the guideline (dropping the step test, th
 
 - That the five voices lowered by the first regeneration are four cantus firmi and one first species counterpoint. Five voices are marked without the dissonant-neighbor clause; their roles were not checked.
 - The Open Music Theory and Magnuson quotations. Example 3-19 was read again from the scan and agrees with the table above.
+
+### Resolved after review
+
+1. The unreachable guard is deleted, and "Checked by deletion" is corrected.
+2. The lower neighbor first, left by a leap, has an example, so criterion 5 is met.
+3. The CHANGELOG and "The pinned corpus" now say the rows rise by less than 0.0101.
+4. The figure has examples in half notes and in mixed half notes and quarters, each with a step on and a leap.
