@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T18:42:00-08:00
   planned_at:   2026-11-24T19:15:02-08:00
   finished_at:
-  updated_at:   2026-11-25T13:03:41-08:00
+  updated_at:   2026-11-25T13:29:59-08:00
 -->
 
 # Story: Place the Cambiata and Double Neighbor in the Bar
@@ -226,3 +226,79 @@ Checked by deletion: remove each clause in turn (the accented onset, the downbea
 - **The reworded messages are long.** The florid violation grows from 15 words to 36. BardTheory shows it beside a mark, so check how it reads there, and shorten the draft if Rob prefers a general sentence.
 - **RubyCritic.** `free_dissonance_treatment.rb` is already 132 lines. Keep the new logic in `FigurePlacement` and check the file's grade before committing.
 - **Release.** v24.0.0 is the last tag, and shapes it passed are marked after this story. Whether that makes the next release major is settled at release.
+
+## Implementation Notes
+
+Implemented on 2026-11-25. Each number carries the commit it was measured at.
+
+### Commits
+
+| Commit | Change |
+| --- | --- |
+| `d2c3167a` | Placement: `FigurePlacement`, `DissonanceFigures#cambiatas` and `#double_neighbors_with`, the three guidelines |
+| `6edffe76` | Note values in the florid and free guidelines, and `#passing_run?` |
+| `0a55d7b7` | `BeginCambiataOnDownbeat` in four guides, with its strings |
+| `8b8fec0d` | Two examples that isolate a clause each |
+| `5d71eac0` | `ConsonantRun`, extracted from `DissonanceFigures` |
+| `14684f6e` | The third species instruction and violation |
+
+### Measured
+
+- **The probe table.** The plan's eighteen lines, in 4/4 and 2/2, against the three guidelines, captured at `cb36c943` before the first edit and again after each step. At `d2c3167a` the misplaced figures gain the marks the plan lists and nothing else moves. At `6edffe76` three lines gain marks in the florid and free guidelines only: the cambiata with a half-note dissonance, the double neighbor in eighths, and the half-note neighbor tone. The marks in 2/2 are the marks in 4/4 at every step.
+- **The pinned corpus.** Regenerated at `d2c3167a` and at `6edffe76`: 0 of 5,808 rows differ. At `0a55d7b7`, 576 rows gain an item, the gated rows of `third_species_harmony`, `first_three_species_harmony`, `fifth_species_harmony`, `free_species_harmony`, and their four composites, 72 each. 224 of them rise, 28 in each guide, by at most 0.008920 (`third_species_triple_meter_examples-0-v1` under `third_species_harmony`, 0.839442 to 0.848362). 352 move in item count only. No row's fitness falls, and no row's message count or adherence changes, so no voice in the corpus is marked by the new guideline.
+- **Fixtures.** The Fux fixture specs pass unchanged at every commit. No mark moved, primary or secondary.
+- **Suite.** `rake validate` at `8b8fec0d`: 19,411 examples, 0 failures, no lint offenses, no vulnerabilities, and RubyCritic exit 1 for one file graded D. After `5d71eac0`, `rake rubycritic` exits 0 with no file below C.
+
+### Checked by deletion
+
+At `8b8fec0d`, each clause removed in turn against `spec/head_music/style/guidelines` and `spec/head_music/style/guideline`.
+
+| Clause removed | Examples that fail |
+| --- | --- |
+| The accented onset, so a cambiata is placed anywhere | 8: "a nota cambiata is refused from beat 2" and its cut-time twin in all three guidelines, and the free guideline's lower-voice and leap-against-a-cambiata examples |
+| The downbeat for the double neighbor | 1: third species, "refuses a double neighbor in eighth notes begun on beat 3" |
+| The same bar for the double neighbor | 1: third species, "is refused where it returns in the next bar" |
+| The quarter note for the cambiata | 2: "is refused where its dissonance is an eighth note", florid and free |
+| The quarter notes for the double neighbor | 4: "is refused in eighth notes" and "where one dissonant neighbor is an eighth", florid and free |
+| The half-note rule, florid | 1: "a dissonant half note is marked as a neighbor tone" |
+| The half-note rule, free | 1: the same example in the free spec |
+| The dissonant second note in `cambiatas` | 3: `#cambiatas` with a consonant second note, and two in the secondary guideline's spec |
+| The secondary guideline's quarter note | 1: "a cambiata begun on beat 3 whose dissonance is an eighth note" |
+| The secondary guideline's placement | 1: "the shape begun on beat 2" |
+| The secondary guideline's downbeat | 3: the downbeat cambiata in 4/4 and 2/2, and figure 87a's shape |
+
+Two clauses could not fail on the lines the plan gave, and each has a line of its own in `8b8fec0d`:
+
+- **The double neighbor's downbeat.** In quarter notes the same-bar clause already refuses every double neighbor that begins after beat 3, since its return falls in the next bar. Only a figure in eighths begins after beat 3 and returns within the bar, and only third species accepts eighths, so the example is `e2 e/ f/ d/ e/ | c` there.
+- **The cambiata's quarter note.** `c'2 b2 | g a b2` is refused by the half-note rule before the quarter-note clause is asked. A cambiata with an eighth-note dissonance, `e2 c'/ b/ g | a b3` over C and D, is refused by the quarter-note clause alone.
+
+### Departures from the plan
+
+- **`ConsonantRun`.** The plan watched `free_dissonance_treatment.rb` for RubyCritic and the file that fell was `dissonance_figures.rb`: flog 172.1 at `cb36c943`, 209.4 at `8b8fec0d` (D, cost 8.29), with `rake validate` exiting 1. The stepwise run of any length, which only the free guideline reads, moved to `HeadMusic::Style::Guideline::ConsonantRun` at `5d71eac0`: `dissonance_figures.rb` is C at 6.37 and `consonant_run.rb` B at 3.84. `consonant_run?` and `passing_run?` answer as before. `free_dissonance_treatment.rb` is C at 5.17.
+- **`FreeDissonanceTreatment#after_dotted_quarter?` is gone.** Once a figure's dissonance must be a quarter note, no eighth can be one, so the rule for the eighth after a dotted quarter answers nothing the general rule does not. Its spec, "with a dissonant eighth after a dotted quarter", still passes.
+- **`DissonanceFigures#dissonant?` and `#dissonant_among`** are public, beyond the two methods the plan listed. The note-value check has to tell a double neighbor's dissonant neighbors from its consonant ones.
+- **The secondary guideline's half-note example is vacuous for its quarter-note clause.** An accented onset is read within the note's bar, so a half-note dissonance has the downbeat as its onset or none. The spec keeps the plan's line and adds the eighth-note line that the clause is for.
+- **`guide_strings_spec.rb`'s registry canary** went from 77 items to 78.
+
+### Open
+
+- **`ContinueAfterDoubleNeighbor` still reads a double neighbor the dissonance guideline has refused.** `g e f d | e | g` over C, C, E earns two primary marks for F and D and a secondary mark for the leap that follows. Salzer and Schachter say a double neighbor off the downbeat "will cease to sound like the decoration of a single tone", which argues that the continuation advice no longer applies. Checked at `5d71eac0`; not changed, since no criterion asks for it and it is a different guideline's rule.
+- **Meters other than 4/4 and 2/2** are not pinned, as the plan said.
+- **The release bump** is still to be settled.
+
+## BardTheory follow-up
+
+Found with `grep -rli "cambiata\|double neighbor\|neighbor tone" ../bardtheory/db/seeds` on 2026-11-25.
+
+- **Dictionary, `d.yml`, double neighbor.** Says the leap "is permitted even when both neighbors are dissonant" and nothing about where the figure begins. Add: it begins on the downbeat, and its neighbors are quarter notes.
+- **Dictionary, `n.yml`, nota cambiata.** Add: it begins on an accented beat, better the downbeat, and its dissonance is a quarter note.
+- **Dictionary, `n.yml`, neighbor tone.** Add: a dissonant half note may only pass, so a dissonant neighbor is a quarter note or shorter.
+- **Dictionary, `t.yml`, third species.** Names the figures; check the sentence against the placement rule.
+- **Lesson `the-cambiata`.** Has "When the figure starts on a downbeat, its fifth note is the downbeat of the next bar." Add the accented-beat rule, the preference for the downbeat with Salzer and Schachter's reason, and figure 87a's tied first note.
+- **Lessons `third-species-introduction` and `third-species-guidelines`.** Both introduce the double neighbor by shape alone. Add that it begins on the downbeat.
+- **Lesson `fifth-species-guidelines`.** Its neighbor tone bullet says "a weak part of the beat" and its cambiata bullet "permitted in quarter-note passages". Add the half-note rule and the quarter-note dissonance for both figures.
+- **Lessons `florid-counterpoint` and `combining-first-second-third-species`.** The second says beats 2, 3, and 4 "may include passing tones and neighbor tones"; a half note in that guide may now only pass.
+- **Lesson `the-neighbor-tone`.** Written for triple meter; add a pointer to the half-note rule where the mixed species are introduced.
+- **Exercises.** `counterpoint-third-species-intro`, `third-species-davis-g-major-2`, `third-species-schoenberg-a-major`, and `third-species-schoenberg-eb-major` say dissonant weak beats "must be passing tones, neighbor tones, or part of a nota cambiata". `combined-123-davis-c-major-1`, `fifth-species-schoenberg-eb-major`, `free-species-c-major`, and `free-species-d-dorian` name neighbor tones on weak beats. Check each sentence, and each exercise's model answer, against the new marks.
+- **The new guideline.** `BeginCambiataOnDownbeat` appears in the third species, first three species, fifth species, and free species exercises with its own name and message.
+- **Displayed messages.** The third species violation is reworded and longer; check how it reads beside a mark.
