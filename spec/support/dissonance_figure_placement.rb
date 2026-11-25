@@ -122,6 +122,11 @@ RSpec.shared_examples "dissonance figure note values" do
       expect(note_value_marks("c'2 b2|g a b2|]", "C4|E4|]")).to eq ["1:3:000 to 2:1:000"]
     end
 
+    # Placed from beat 3; B is a seventh over C, and it leaps from an eighth.
+    it "is refused where its dissonance is an eighth note" do
+      expect(note_value_marks("e2 c'/ b/ g|a b3|]", "C4|D4|]")).to eq ["1:3:480 to 1:4:000"]
+    end
+
     it "is recognized with a long consonant note after its leap" do
       expect(note_value_marks("c' b g2|a b3|]", "C4|D4|]")).to eq []
     end

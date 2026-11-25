@@ -30,6 +30,12 @@ describe HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment do
       expect(third_species_marks("e/ f/ d/ e/ c2|c4|]", "C4|C4|]")).to eq []
     end
 
+    # The same figure after beat 3, an accented beat that is not the downbeat.
+    # It returns within the bar, so only its beginning is at fault.
+    it "refuses a double neighbor in eighth notes begun on beat 3" do
+      expect(third_species_marks("e2 e/ f/ d/ e/|c4|]", "C4|C4|]")).to eq ["1:3:480 to 1:4:000", "1:4:000 to 1:4:480"]
+    end
+
     it "recognizes a nota cambiata whose dissonance is a half note" do
       expect(third_species_marks("c'2 b2|g a b2|]", "C4|E4|]")).to eq []
     end
