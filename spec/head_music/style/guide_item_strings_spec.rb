@@ -84,7 +84,7 @@ GUIDE_ITEM_STRINGS = [
   ["StepUpToFinalNote", {}, "Step up to the final note."],
   ["SuspensionTreatment", {}, "Prepare each suspension as a consonance and resolve it downward by step."],
   ["SustainAcrossBarlines", {}, "Sustain a note across the barline into most downbeats, breaking the syncopation only rarely."],
-  ["ThirdSpeciesDissonanceTreatment", {}, "Treat dissonances as passing tones, neighbor tones, cambiata, or double neighbor figures."],
+  ["ThirdSpeciesDissonanceTreatment", {}, "Treat each dissonance as a passing tone, a neighbor tone, a cambiata begun on an accented beat, or a double neighbor begun on the downbeat."],
   ["ThreePerBar", {}, "Use three quarter notes in each middle bar."],
   ["TripleMeterDissonanceTreatment", {}, "Treat dissonances as passing tones or neighbor tones."],
   ["TwoPerBar", {}, "Use two half notes in each middle bar."],

@@ -1055,9 +1055,9 @@ en:
             default: "Sustain a note across the barline into most downbeats, breaking the syncopation only rarely."
         third_species_dissonance_treatment:
           name: "Third species dissonance treatment"
-          instruction: "Reach every dissonance as a passing tone, neighbor tone, cambiata, or double neighbor figure."
+          instruction: "Reach every dissonance as a passing tone, a neighbor tone, a cambiata begun on an accented beat, or a double neighbor begun on the downbeat."
           violations:
-            default: "Treat dissonances as passing tones, neighbor tones, cambiata, or double neighbor figures."
+            default: "Treat each dissonance as a passing tone, a neighbor tone, a cambiata begun on an accented beat, or a double neighbor begun on the downbeat."
         triple_meter_dissonance_treatment:
           name: "Triple meter dissonance treatment"
           instruction: "Reach every dissonance as a passing tone or a neighbor tone."

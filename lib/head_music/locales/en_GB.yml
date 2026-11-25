@@ -148,9 +148,9 @@ en_GB:
           violations:
             default: "Use %{number} %{rhythmic_unit} in each middle bar."
         third_species_dissonance_treatment:
-          instruction: "Reach every dissonance as a passing tone, neighbour tone, cambiata, or double neighbour figure."
+          instruction: "Reach every dissonance as a passing tone, a neighbour tone, a cambiata begun on an accented beat, or a double neighbour begun on the downbeat."
           violations:
-            default: "Treat dissonances as passing tones, neighbour tones, cambiata, or double neighbour figures."
+            default: "Treat each dissonance as a passing tone, a neighbour tone, a cambiata begun on an accented beat, or a double neighbour begun on the downbeat."
         triple_meter_dissonance_treatment:
           name: "Triple metre dissonance treatment"
           instruction: "Reach every dissonance as a passing tone or a neighbour tone."
