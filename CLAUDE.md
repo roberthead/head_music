@@ -172,6 +172,8 @@ Consult these when implementing or modifying style guidelines:
 
 Consult the files in `references/` when implementing or modifying style guidelines. These contain pedagogical surveys with cross-source comparisons mapped to head_music's style guideline architecture.
 
+Read `LEARNINGS.md` before planning or reviewing a story. It holds the lessons distilled from finished stories.
+
 ## Music theory and concepts
 
 Please refer to MUSIC_THEORY.md for music theory domain knowledge.
