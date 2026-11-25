@@ -60,6 +60,10 @@ class HeadMusic::Style::Guideline
       @dissonant.call(note)
     end
 
+    def dissonant_among(figure)
+      figure.select { |note| dissonant?(note) }
+    end
+
     # Escape tone: approached by step from a consonant note and left by a
     # third in the opposite direction to a consonant note. The first neighbor
     # of a double neighbor has the same shape and belongs to that figure.
@@ -75,20 +79,37 @@ class HeadMusic::Style::Guideline
     # one direction (passing) or returning to its starting pitch (neighbor).
     # A rest breaks the run.
     def consonant_run?(note)
-      phrase = notes.slice_when { |earlier, later| earlier.next_position < later.position }.detect { |group| group.include?(note) }
-      index = phrase.index(note)
-      first = phrase.take(index).rindex { |candidate| consonant?(candidate) }
-      last = phrase.drop(index + 1).index { |candidate| consonant?(candidate) }
-      return false unless first && last
+      passing_run?(note) || returning_run?(note)
+    end
 
-      stepwise_run?(phrase[first..(index + 1 + last)])
+    # The passing half of a consonant run, which is all a dissonant half note
+    # may be.
+    def passing_run?(note)
+      run_intervals(note).map(&:direction).uniq.one?
     end
 
     private
 
-    def stepwise_run?(run)
-      intervals = run.each_cons(2).map { |pair| HeadMusic::Analysis::MelodicInterval.new(*pair) }
-      intervals.all?(&:step?) && (intervals.map(&:direction).uniq.one? || run.first.pitch == run.last.pitch)
+    def returning_run?(note)
+      run = stepwise_run(note)
+      run.any? && run.first.pitch == run.last.pitch
+    end
+
+    def run_intervals(note)
+      stepwise_run(note).each_cons(2).map { |pair| HeadMusic::Analysis::MelodicInterval.new(*pair) }
+    end
+
+    # The notes from the nearest consonance before the note to the nearest
+    # after it, or none where the line does not move by step between them.
+    def stepwise_run(note)
+      phrase = notes.slice_when { |earlier, later| earlier.next_position < later.position }.detect { |group| group.include?(note) }
+      index = phrase.index(note)
+      first = phrase.take(index).rindex { |candidate| consonant?(candidate) }
+      last = phrase.drop(index + 1).index { |candidate| consonant?(candidate) }
+      return [] unless first && last
+
+      run = phrase[first..(index + 1 + last)]
+      (run.each_cons(2).all? { |pair| HeadMusic::Analysis::MelodicInterval.new(*pair).step? }) ? run : []
     end
 
     def consonant?(note)

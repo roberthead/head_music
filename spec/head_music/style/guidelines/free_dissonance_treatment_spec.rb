@@ -214,6 +214,7 @@ describe HeadMusic::Style::Guidelines::FreeDissonanceTreatment do
   end
 
   it_behaves_like "dissonance figure placement"
+  it_behaves_like "dissonance figure note values"
 
   # F is a fourth over C, and D on the downbeat a ninth.
   context "with a double neighbor from beat 3 whose downbeat neighbor is dissonant" do

@@ -18,6 +18,23 @@ describe HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment do
 
   it_behaves_like "dissonance figure placement"
 
+  # The rhythm of third species is the melody guide's to judge, so a placed
+  # figure is recognized here whatever its note values.
+  describe "a placed figure in other note values" do
+    def third_species_marks(upper, lower)
+      line = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/4\nK:C\nV:upper\n#{upper}\nV:lower\n#{lower}\n").voices.first
+      assess(described_class, line).marks.map(&:code)
+    end
+
+    it "recognizes a double neighbor in eighth notes" do
+      expect(third_species_marks("e/ f/ d/ e/ c2|c4|]", "C4|C4|]")).to eq []
+    end
+
+    it "recognizes a nota cambiata whose dissonance is a half note" do
+      expect(third_species_marks("c'2 b2|g a b2|]", "C4|E4|]")).to eq []
+    end
+  end
+
   context "with no notes" do
     it { is_expected.to be_adherent }
   end

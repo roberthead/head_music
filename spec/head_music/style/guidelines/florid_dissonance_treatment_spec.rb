@@ -16,6 +16,7 @@ describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
   end
 
   it_behaves_like "dissonance figure placement"
+  it_behaves_like "dissonance figure note values"
 
   def marks_over_held_notes(upper, lower)
     line = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/4\nK:C\nV:upper\n#{upper}\nV:lower\n#{lower}\n").voices.first

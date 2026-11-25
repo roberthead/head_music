@@ -1,26 +1,35 @@
 module HeadMusic::Style; end
 
 class HeadMusic::Style::Guideline
-  # Where a nota cambiata or a double neighbor falls in the bar. A double
-  # neighbor "must begin on the first beat of the measure", and a cambiata
-  # "on an accented beat" (Salzer and Schachter, pp. 62-63).
+  # Where a nota cambiata or a double neighbor falls in the bar, and the note
+  # values its dissonances take. A double neighbor "must begin on the first
+  # beat of the measure", and a cambiata "on an accented beat" (Salzer and
+  # Schachter, pp. 62-63).
   #
   # A figure's beginning is read from its dissonant note, not from where its
   # first note was attacked, so a first note tied over the barline does not
   # move the figure.
   module FigurePlacement
+    HALF_NOTE = HeadMusic::Rudiment::RhythmicDuration.get(:half)
+
     private
 
-    def leaping_figure?(figures, note)
-      placed_cambiata_dissonance?(figures, note) || placed_double_neighbor_member?(figures, note)
+    # With quarter_dissonances, the figure's dissonant notes must be quarter
+    # notes: a dissonant half note may only pass, and an eighth may not be
+    # left by leap (Salzer and Schachter, pp. 103-105).
+    def leaping_figure?(figures, note, quarter_dissonances:)
+      placed_cambiata_dissonance?(figures, note, quarters: quarter_dissonances) ||
+        placed_double_neighbor_member?(figures, note, quarters: quarter_dissonances)
     end
 
-    def placed_cambiata_dissonance?(figures, note)
-      figures.cambiata_dissonance?(note) && cambiata_placed?(note)
+    def placed_cambiata_dissonance?(figures, note, quarters:)
+      figures.cambiata_dissonance?(note) && cambiata_placed?(note) && (!quarters || quarter_note?(note))
     end
 
-    def placed_double_neighbor_member?(figures, note)
-      figures.double_neighbors_with(note).any? { |figure| double_neighbor_placed?(figure) }
+    def placed_double_neighbor_member?(figures, note, quarters:)
+      figures.double_neighbors_with(note).any? do |figure|
+        double_neighbor_placed?(figure) && (!quarters || figures.dissonant_among(figure).all? { |neighbor| quarter_note?(neighbor) })
+      end
     end
 
     def cambiata_placed?(dissonance)
@@ -46,6 +55,14 @@ class HeadMusic::Style::Guideline
         .map { |count| HeadMusic::Content::Position.new(position.flow, position.bar_number, count, 0) }
         .select(&:strong?)
         .detect { |beat| beat + note.rhythmic_duration == position }
+    end
+
+    def quarter_note?(note)
+      note.rhythmic_duration == :quarter
+    end
+
+    def half_note_or_longer?(note)
+      note.rhythmic_duration >= HALF_NOTE
     end
   end
 end

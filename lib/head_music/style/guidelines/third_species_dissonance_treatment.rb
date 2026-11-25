@@ -12,6 +12,6 @@ class HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment < HeadMusic:
   private
 
   def recognized_figure?(note)
-    super || neighbor_tone?(note) || leaping_figure?(dissonance_figures, note)
+    super || neighbor_tone?(note) || leaping_figure?(dissonance_figures, note, quarter_dissonances: false)
   end
 end

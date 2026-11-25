@@ -91,3 +91,55 @@ RSpec.shared_examples "dissonance figure placement" do
     end
   end
 end
+
+# The note values the florid and free guidelines ask of a dissonance: a half
+# note may only pass, and the dissonant notes of a cambiata or a double
+# neighbor are quarter notes (Salzer and Schachter, pp. 103-105).
+RSpec.shared_examples "dissonance figure note values" do
+  def note_value_marks(upper, lower)
+    flow = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/4\nK:C\nV:upper\n#{upper}\nV:lower\n#{lower}\n")
+    assess(described_class, flow.voices.first).marks.map(&:code)
+  end
+
+  describe "a dissonant half note" do
+    it "is accepted as a passing tone" do
+      expect(note_value_marks("e2 f2|g4|]", "C4|C4|]")).to eq []
+    end
+
+    # The same fourth over C, returning instead of passing.
+    it "is marked as a neighbor tone" do
+      expect(note_value_marks("e2 f2|e4|]", "C4|C4|]")).to eq ["1:3:000 to 2:1:000"]
+    end
+  end
+
+  it "accepts a quarter-note neighbor tone" do
+    expect(note_value_marks("e f e g|c'4|]", "C4|C4|]")).to eq []
+  end
+
+  describe "a nota cambiata" do
+    # Placed from the downbeat; only the half note is at fault.
+    it "is refused where its dissonance is a half note" do
+      expect(note_value_marks("c'2 b2|g a b2|]", "C4|E4|]")).to eq ["1:3:000 to 2:1:000"]
+    end
+
+    it "is recognized with a long consonant note after its leap" do
+      expect(note_value_marks("c' b g2|a b3|]", "C4|D4|]")).to eq []
+    end
+  end
+
+  describe "a double neighbor" do
+    # Placed from the downbeat; F is a fourth and D a ninth over C.
+    it "is refused in eighth notes, marking both neighbors" do
+      expect(note_value_marks("e/ f/ d/ e/ c2|c4|]", "C4|C4|]")).to eq ["1:1:480 to 1:2:000", "1:2:000 to 1:2:480"]
+    end
+
+    it "is refused where one dissonant neighbor is an eighth, marking both" do
+      expect(note_value_marks("e f d/ e/ c|c4|]", "C4|C4|]")).to eq ["1:2:000 to 1:3:000", "1:3:000 to 1:3:480"]
+    end
+
+    # G is a fifth over C, so the quarter-note B is the only dissonance.
+    it "is recognized where the neighbor that is an eighth is consonant" do
+      expect(note_value_marks("a b g/ a/ g|g4|]", "C4|C4|]")).to eq []
+    end
+  end
+end

@@ -2,11 +2,13 @@
 module HeadMusic::Style::Guidelines; end
 
 # Unified dissonance handling for mixed-species (florid) contexts. Judges
-# each note at its attack: a dissonance attacked on a strong beat is a fault,
-# and a weak-beat dissonance must be a passing tone, neighbor tone, nota
-# cambiata, or double neighbor figure. A note held over into a dissonance
-# starts on a weak beat and is consonant there, so it is never this
-# guideline's concern; the suspension rule judges it.
+# each note at its attack: a dissonance attacked on a downbeat is a fault,
+# and any other must be a passing tone, a neighbor tone, or a quarter note in
+# a placed nota cambiata or double neighbor. "Every note value is governed by
+# the procedures of the species to which it belongs" (Salzer and Schachter,
+# p. 103), so a dissonant half note may only pass, as in second species.
+# A note held over into a dissonance is consonant where it is attacked, so it
+# is never this guideline's concern; the suspension rule judges it.
 class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style::Guideline
   include HeadMusic::Style::Guidelines::DissonanceFigureDetection
   include HeadMusic::Style::Guideline::FigurePlacement
@@ -25,7 +27,8 @@ class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style
 
   def properly_treated?(note)
     return false if downbeat_position?(note.position)
+    return passing_tone?(note) if half_note_or_longer?(note)
 
-    passing_tone?(note) || neighbor_tone?(note) || leaping_figure?(dissonance_figures, note)
+    passing_tone?(note) || neighbor_tone?(note) || leaping_figure?(dissonance_figures, note, quarter_dissonances: true)
   end
 end

@@ -87,25 +87,14 @@ class HeadMusic::Style::Guidelines::FreeDissonanceTreatment < HeadMusic::Style::
     melodic.step? && melodic.descending? && consonant_note?(later)
   end
 
+  # A dissonant half note may only pass, and only a quarter note may be the
+  # dissonance of a cambiata or a double neighbor, which rules out the eighth
+  # after a dotted quarter along with every other.
   def explained_by_figure?(note)
     figures = figures_for(note.voice)
-    return figures.consonant_run?(note) if after_dotted_quarter?(note)
+    return figures.passing_run?(note) if half_note_or_longer?(note)
 
-    figures.consonant_run?(note) || leaping_figure?(figures, note)
-  end
-
-  def after_dotted_quarter?(note)
-    return false unless attack_value(note).unit_name == "eighth"
-
-    index = note.voice.notes.index(note)
-    return false unless index&.positive?
-
-    previous_value = attack_value(note.voice.notes[index - 1])
-    previous_value.unit_name == "quarter" && previous_value.dots == 1
-  end
-
-  def attack_value(note)
-    note.rhythmic_duration.values.first
+    figures.consonant_run?(note) || leaping_figure?(figures, note, quarter_dissonances: true)
   end
 
   def figures_for(line)

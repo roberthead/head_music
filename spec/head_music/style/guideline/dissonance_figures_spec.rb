@@ -91,6 +91,35 @@ describe HeadMusic::Style::Guideline::DissonanceFigures do
     end
   end
 
+  describe "#passing_run?" do
+    let(:lower) { "C4|C4|]" }
+
+    context "with a passing tone" do
+      let(:upper) { "e f g2|e4|]" }
+
+      it { expect(figures.passing_run?(line.notes[1])).to be true }
+    end
+
+    context "with two dissonances passing in one direction" do
+      let(:upper) { "g f e d|c4|]" }
+      let(:lower) { "B,4|C4|]" }
+
+      it { expect(figures.passing_run?(line.notes[1])).to be true }
+    end
+
+    context "with a neighbor tone" do
+      let(:upper) { "e f e2|e4|]" }
+
+      it { expect(figures.passing_run?(line.notes[1])).to be false }
+    end
+
+    context "with a dissonance left by leap" do
+      let(:upper) { "e f a2|e4|]" }
+
+      it { expect(figures.passing_run?(line.notes[1])).to be false }
+    end
+  end
+
   # The fifth note is the cambiata's goal: without two steps back there is no
   # figure, however consonant the note the line reaches instead.
   context "with a nota cambiata that turns back after one step" do
