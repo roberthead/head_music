@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-11-24T15:35:04-08:00
-  activated_at:
+  activated_at: 2026-11-24T18:42:00-08:00
   planned_at:
   finished_at:
-  updated_at:   2026-11-24T16:08:13-08:00
+  updated_at:   2026-11-24T18:42:00-08:00
 -->
 
 # Story: Place the Cambiata and Double Neighbor in the Bar
