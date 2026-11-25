@@ -829,6 +829,11 @@ en:
               one: "Write no more than %{number} bar."
               other: "Write no more than %{number} bars."
             between: "Write between %{minimum} and %{maximum} bars."
+        begin_cambiata_on_downbeat:
+          name: "Cambiata from the downbeat"
+          instruction: "Begin a nota cambiata on the downbeat rather than on the bar's other accented beat."
+          violations:
+            default: "Begin the nota cambiata on the downbeat."
         clausula_vera:
           name: "Clausula vera"
           instruction: "Close on the tonic in an octave or unison, one voice stepping up from the leading tone as the other steps down from the second degree."

@@ -14,6 +14,7 @@ describe HeadMusic::Style::Guides::ThirdSpeciesHarmony do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferImperfect }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment }
   specify { expect(described_class.items_by_tier[:secondary].map(&:guideline)).to include HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor }
+  specify { expect(described_class.items_by_tier[:secondary].map(&:guideline)).to include HeadMusic::Style::Guidelines::BeginCambiataOnDownbeat }
 
   context "with a well-formed third-species counterpoint" do
     let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }

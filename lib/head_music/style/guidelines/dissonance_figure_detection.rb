@@ -8,7 +8,7 @@ module HeadMusic::Style::Guidelines::DissonanceFigureDetection
   private
 
   delegate :passing_tone?, :neighbor_tone?, :cambiata_dissonance?, :double_neighbor_member?, :double_neighbors,
-    :escape_tone?, to: :dissonance_figures, private: true
+    :cambiatas, :escape_tone?, to: :dissonance_figures, private: true
 
   def dissonance_figures
     @dissonance_figures ||= HeadMusic::Style::Guideline::DissonanceFigures.new(

@@ -242,6 +242,9 @@ en:
   figure.
 - Treat dissonances as passing tones, neighbor tones, cambiata, or double neighbor
   figures.
+- Cambiata from the downbeat
+- Begin a nota cambiata on the downbeat rather than on the bar's other accented beat.
+- Begin the nota cambiata on the downbeat.
 - Continuation after a double neighbor
 - Leave a double neighbor by step, continuing in the direction of its last step.
 - Continue by step in the same direction after a double neighbor.
@@ -636,6 +639,9 @@ en_GB:
   figure.
 - Treat dissonances as passing tones, neighbour tones, cambiata, or double neighbour
   figures.
+- Cambiata from the downbeat
+- Begin a nota cambiata on the downbeat rather than on the bar's other accented beat.
+- Begin the nota cambiata on the downbeat.
 - Continuation after a double neighbour
 - Leave a double neighbour by step, continuing in the direction of its last step.
 - Continue by step in the same direction after a double neighbour.

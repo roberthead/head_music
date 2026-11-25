@@ -12,6 +12,7 @@ class HeadMusic::Style::Guides::FifthSpeciesHarmony < HeadMusic::Style::Guides::
 
   secondary_items(
     *HARMONIC_CORE,
+    HeadMusic::Style::Guidelines::BeginCambiataOnDownbeat,
     HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor,
     HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline,
     HeadMusic::Style::Guidelines::NoParallelPerfectWithSyncopation,

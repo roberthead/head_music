@@ -4,5 +4,9 @@ class HeadMusic::Style::Guides::ThirdSpeciesHarmony < HeadMusic::Style::Guides::
 
   primary_items(HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment)
 
-  secondary_items(*DIMINUTION_HARMONIC_CRAFT, HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor)
+  secondary_items(
+    *DIMINUTION_HARMONIC_CRAFT,
+    HeadMusic::Style::Guidelines::BeginCambiataOnDownbeat,
+    HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor
+  )
 end

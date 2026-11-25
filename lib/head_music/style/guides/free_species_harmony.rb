@@ -22,6 +22,7 @@ class HeadMusic::Style::Guides::FreeSpeciesHarmony < HeadMusic::Style::Guides::S
       secondary: [
         *(INHERITED_HARMONIC_CRAFT - [HeadMusic::Style::Guidelines::ConsonantDownbeats]),
         HeadMusic::Style::Guidelines::ConsonantDownbeats.with(restruck_suspensions: true),
+        HeadMusic::Style::Guidelines::BeginCambiataOnDownbeat,
         HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor,
         (HeadMusic::Style::Guidelines::BarCount.with(bars) if bars)
       ]

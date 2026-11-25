@@ -30,9 +30,11 @@ describe HeadMusic::Style::Guides::FreeSpeciesHarmony do
         .to eq [guidelines::FreeDissonanceTreatment, guidelines::ClausulaVera, guidelines::IndependentTextures]
     end
 
-    it "keeps the inherited two-part craft and the double neighbor's continuation as background" do
+    it "keeps the inherited two-part craft and the preferences about the two figures as background" do
+      figure_preferences = [guidelines::BeginCambiataOnDownbeat, guidelines::ContinueAfterDoubleNeighbor]
+
       expect(tier(described_class, :secondary))
-        .to contain_exactly(*described_class::INHERITED_HARMONIC_CRAFT, guidelines::ContinueAfterDoubleNeighbor)
+        .to contain_exactly(*described_class::INHERITED_HARMONIC_CRAFT, *figure_preferences)
     end
 
     it "adds BarCount to the background only when a length is configured" do

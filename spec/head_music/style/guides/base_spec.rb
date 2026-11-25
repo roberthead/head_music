@@ -94,10 +94,10 @@ describe HeadMusic::Style::Guides::Base do
         PreferContraryMotion PreferImperfect SetAgainstAnotherVoice WeakBeatDissonanceTreatment
       ],
       "third_species_harmony" => %w[
-        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
-        ContinueAfterDoubleNeighbor MinimumNotes NoParallelPerfectAcrossBarline NoParallelPerfectOnDownbeats
-        NoStrongBeatUnisons PreferContraryMotion PreferImperfect SetAgainstAnotherVoice
-        ThirdSpeciesDissonanceTreatment
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices BeginCambiataOnDownbeat
+        ConsonantDownbeats ContinueAfterDoubleNeighbor MinimumNotes NoParallelPerfectAcrossBarline
+        NoParallelPerfectOnDownbeats NoStrongBeatUnisons PreferContraryMotion PreferImperfect
+        SetAgainstAnotherVoice ThirdSpeciesDissonanceTreatment
       ],
       "third_species_triple_meter_harmony" => %w[
         ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
@@ -111,22 +111,23 @@ describe HeadMusic::Style::Guides::Base do
       ],
       # The two diminution rules are the only addition anywhere in this change.
       "first_three_species_harmony" => %w[
-        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
-        ContinueAfterDoubleNeighbor FloridDissonanceTreatment MinimumNotes NoParallelPerfectAcrossBarline
-        NoParallelPerfectOnDownbeats NoStrongBeatUnisons PreferContraryMotion PreferImperfect
-        SetAgainstAnotherVoice
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices BeginCambiataOnDownbeat
+        ConsonantDownbeats ContinueAfterDoubleNeighbor FloridDissonanceTreatment MinimumNotes
+        NoParallelPerfectAcrossBarline NoParallelPerfectOnDownbeats NoStrongBeatUnisons PreferContraryMotion
+        PreferImperfect SetAgainstAnotherVoice
       ],
       "fifth_species_harmony" => %w[
-        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
-        ContinueAfterDoubleNeighbor EmbellishedSuspensionTreatment FloridDissonanceTreatment MinimumNotes
-        NoParallelPerfectAcrossBarline NoParallelPerfectOnDownbeats NoParallelPerfectWithSyncopation
-        NoStrongBeatUnisons PreferContraryMotion PreferImperfect SetAgainstAnotherVoice
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices BeginCambiataOnDownbeat
+        ConsonantDownbeats ContinueAfterDoubleNeighbor EmbellishedSuspensionTreatment
+        FloridDissonanceTreatment MinimumNotes NoParallelPerfectAcrossBarline NoParallelPerfectOnDownbeats
+        NoParallelPerfectWithSyncopation NoStrongBeatUnisons PreferContraryMotion PreferImperfect
+        SetAgainstAnotherVoice
       ],
       # Free species adds its own three rules to the inherited craft, and
       # BarCount only when a length is configured.
       "free_species_harmony" => %w[
-        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ClausulaVera
-        ConsonantDownbeats ContinueAfterDoubleNeighbor FreeDissonanceTreatment IndependentTextures
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices BeginCambiataOnDownbeat
+        ClausulaVera ConsonantDownbeats ContinueAfterDoubleNeighbor FreeDissonanceTreatment IndependentTextures
         MinimumNotes NoParallelPerfectAcrossBarline NoParallelPerfectOnDownbeats
         NoParallelPerfectWithSyncopation NoStrongBeatUnisons PreferContraryMotion PreferImperfect
         SetAgainstAnotherVoice
