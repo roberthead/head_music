@@ -213,6 +213,85 @@ describe HeadMusic::Style::Guidelines::FreeDissonanceTreatment do
     it_behaves_like "no marks in either voice"
   end
 
+  it_behaves_like "dissonance figure placement"
+
+  # F is a fourth over C, and D on the downbeat a ninth.
+  context "with a double neighbor from beat 3 whose downbeat neighbor is dissonant" do
+    let(:upper) { "g g e f|d e c2|]" }
+    let(:lower) { "C4|C4|]" }
+
+    it "marks both neighbors" do
+      expect(marks_in(upper_voice)).to eq ["1:4:000 to 2:1:000", "2:1:000 to 2:2:000"]
+    end
+  end
+
+  describe "a figure in the lower voice" do
+    context "with a double neighbor from the downbeat" do
+      let(:upper) { "g4|g4|]" }
+      let(:lower) { "E F D E|C4|]" }
+
+      it_behaves_like "no marks in either voice"
+    end
+
+    # F is a ninth and D a fourth under G.
+    context "with a double neighbor from beat 2" do
+      let(:upper) { "g4|g4|]" }
+      let(:lower) { "G E F D|E4|]" }
+
+      it "marks both neighbors in the lower voice" do
+        expect([marks_in(upper_voice), marks_in(lower_voice)]).to eq [[], ["1:3:000 to 1:4:000", "1:4:000 to 2:1:000"]]
+      end
+    end
+
+    context "with a nota cambiata from the downbeat" do
+      let(:upper) { "e4|d4|]" }
+      let(:lower) { "C B, G, A,|B,4|]" }
+
+      it_behaves_like "no marks in either voice"
+    end
+
+    # B is a fourth under E.
+    context "with a nota cambiata from beat 2" do
+      let(:upper) { "e4|c d3|]" }
+      let(:lower) { "E C B, G,|A, B, D2|]" }
+
+      it "marks its dissonance in the lower voice" do
+        expect([marks_in(upper_voice), marks_in(lower_voice)]).to eq [[], ["1:3:000 to 1:4:000"]]
+      end
+    end
+  end
+
+  # From beat 4 the figure's dissonance is attacked on a downbeat, which no
+  # figure excuses. It needs a moving voice: over one held note its second
+  # and fifth notes, the same pitch, would both be dissonant.
+  context "with a nota cambiata from beat 4 against a moving voice" do
+    let(:upper) { "e2 e c'|b g a b|c'4|]" }
+    let(:lower) { "C4-|C G,3|C4|]" }
+
+    it "marks the dissonance on the downbeat" do
+      expect([marks_in(upper_voice), marks_in(lower_voice)]).to eq [["2:1:000 to 2:2:000"], []]
+    end
+  end
+
+  context "with a leap in one voice into the dissonance of a cambiata in the other" do
+    context "when the cambiata begins on the downbeat" do
+      let(:upper) { "c' b g a|b4|]" }
+      let(:lower) { "E C C2|G,4|]" }
+
+      it_behaves_like "no marks in either voice"
+    end
+
+    # B is a seventh over C, and neither voice has a figure to explain it.
+    context "when the cambiata begins on beat 2" do
+      let(:upper) { "e c' b g|a b d'2|]" }
+      let(:lower) { "E2 C2|D4|]" }
+
+      it "marks both voices" do
+        expect([marks_in(upper_voice), marks_in(lower_voice)]).to eq [["1:3:000 to 1:4:000"], ["1:3:000 to 2:1:000"]]
+      end
+    end
+  end
+
   context "with no other voice" do
     let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/4\nK:C\nc d e f|]\n") }
 

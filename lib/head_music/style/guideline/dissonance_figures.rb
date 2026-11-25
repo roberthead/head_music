@@ -28,8 +28,7 @@ class HeadMusic::Style::Guideline
     # note 3, then notes 3-4-5 proceed stepwise in the opposite direction.
     # Notes 1, 3, and 5 must be consonant.
     def cambiata_dissonance?(note)
-      start = figure_start(note, 1)
-      cambiata_shape?(start) && all_consonant?(*notes.values_at(start, start + 2, start + 4))
+      cambiata_figure?(figure_start(note, 1))
     end
 
     def double_neighbor_member?(note)
@@ -39,10 +38,26 @@ class HeadMusic::Style::Guideline
     # The four notes of each completed double neighbor. Where both neighbors
     # are consonant the shape excuses nothing and is only a turn in the line.
     def double_neighbors
-      notes.each_index
+      @double_neighbors ||= notes.each_index
         .select { |start| double_neighbor_figure?(start) }
         .map { |start| notes[start, 4] }
         .reject { |figure| all_consonant?(*figure) }
+    end
+
+    def double_neighbors_with(note)
+      double_neighbors.select { |figure| figure[1, 2].include?(note) }
+    end
+
+    # The five notes of each cambiata. With a consonant second note the shape
+    # excuses nothing.
+    def cambiatas
+      @cambiatas ||= notes.each_index
+        .select { |start| cambiata_figure?(start) && dissonant?(notes[start + 1]) }
+        .map { |start| notes[start, 5] }
+    end
+
+    def dissonant?(note)
+      @dissonant.call(note)
     end
 
     # Escape tone: approached by step from a consonant note and left by a
@@ -77,7 +92,11 @@ class HeadMusic::Style::Guideline
     end
 
     def consonant?(note)
-      !@dissonant.call(note)
+      !dissonant?(note)
+    end
+
+    def cambiata_figure?(start)
+      cambiata_shape?(start) && all_consonant?(*notes.values_at(start, start + 2, start + 4))
     end
 
     def stepwise_figure?(note, same_direction:)
@@ -131,7 +150,7 @@ class HeadMusic::Style::Guideline
     end
 
     def all_consonant?(*checked_notes)
-      checked_notes.none? { |note| @dissonant.call(note) }
+      checked_notes.none? { |note| dissonant?(note) }
     end
   end
 end

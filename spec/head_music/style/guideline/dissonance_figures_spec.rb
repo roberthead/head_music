@@ -152,6 +152,42 @@ describe HeadMusic::Style::Guideline::DissonanceFigures do
     end
   end
 
+  describe "#double_neighbors_with" do
+    let(:upper) { "e f d e|c4|]" }
+    let(:lower) { "C4|C4|]" }
+
+    it "returns the figure for either neighbor" do
+      expect(figures.double_neighbors_with(line.notes[1])).to eq [line.notes[0, 4]]
+      expect(figures.double_neighbors_with(line.notes[2])).to eq [line.notes[0, 4]]
+    end
+
+    it "returns nothing for the note the figure decorates" do
+      expect(figures.double_neighbors_with(line.notes[0])).to be_empty
+      expect(figures.double_neighbors_with(line.notes[3])).to be_empty
+    end
+  end
+
+  describe "#cambiatas" do
+    let(:upper) { "c' b g a|b4|]" }
+
+    context "with a dissonant second note" do
+      let(:lower) { "C4|G,4|]" }
+
+      it "returns the five notes of the figure" do
+        expect(figures.cambiatas).to eq [line.notes[0, 5]]
+      end
+    end
+
+    # B is a fifth over E.
+    context "with a consonant second note" do
+      let(:lower) { "E4|G,4|]" }
+
+      it "returns no cambiata" do
+        expect(figures.cambiatas).to be_empty
+      end
+    end
+  end
+
   describe "#escape_tone?" do
     subject(:escape_tone) { figures.escape_tone?(line.notes[1]) }
 

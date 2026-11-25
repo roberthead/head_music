@@ -15,6 +15,20 @@ describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
     end
   end
 
+  it_behaves_like "dissonance figure placement"
+
+  def marks_over_held_notes(upper, lower)
+    line = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/4\nK:C\nV:upper\n#{upper}\nV:lower\n#{lower}\n").voices.first
+    assess(described_class, line).marks.map(&:code)
+  end
+
+  # F is a fourth over C, and D on the downbeat a ninth.
+  context "with a double neighbor from beat 3 whose downbeat neighbor is dissonant" do
+    it "marks both neighbors" do
+      expect(marks_over_held_notes("g g e f|d e c2|]", "C4|C4|]")).to eq ["1:4:000 to 2:1:000", "2:1:000 to 2:2:000"]
+    end
+  end
+
   context "with no notes" do
     it { is_expected.to be_adherent }
   end

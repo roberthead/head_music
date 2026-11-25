@@ -15,6 +15,8 @@ module HeadMusic::Style::Guidelines; end
 # A passing or neighbor figure runs from consonance to consonance, so two
 # lines stepping in parallel dissonances explain nothing.
 class HeadMusic::Style::Guidelines::FreeDissonanceTreatment < HeadMusic::Style::Guideline
+  include HeadMusic::Style::Guideline::FigurePlacement
+
   def marks
     return [] unless companion&.notes&.any?
 
@@ -89,7 +91,7 @@ class HeadMusic::Style::Guidelines::FreeDissonanceTreatment < HeadMusic::Style::
     figures = figures_for(note.voice)
     return figures.consonant_run?(note) if after_dotted_quarter?(note)
 
-    figures.consonant_run?(note) || figures.cambiata_dissonance?(note) || figures.double_neighbor_member?(note)
+    figures.consonant_run?(note) || leaping_figure?(figures, note)
   end
 
   def after_dotted_quarter?(note)

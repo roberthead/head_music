@@ -16,6 +16,8 @@ describe HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment do
     end
   end
 
+  it_behaves_like "dissonance figure placement"
+
   context "with no notes" do
     it { is_expected.to be_adherent }
   end

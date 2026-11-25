@@ -9,6 +9,7 @@ module HeadMusic::Style::Guidelines; end
 # guideline's concern; the suspension rule judges it.
 class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style::Guideline
   include HeadMusic::Style::Guidelines::DissonanceFigureDetection
+  include HeadMusic::Style::Guideline::FigurePlacement
 
   def marks
     return [] unless cantus_firmus&.notes&.any?
@@ -25,7 +26,6 @@ class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style
   def properly_treated?(note)
     return false if downbeat_position?(note.position)
 
-    passing_tone?(note) || neighbor_tone?(note) ||
-      cambiata_dissonance?(note) || double_neighbor_member?(note)
+    passing_tone?(note) || neighbor_tone?(note) || leaping_figure?(dissonance_figures, note)
   end
 end
