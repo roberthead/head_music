@@ -74,42 +74,22 @@ class HeadMusic::Style::Guideline
         !double_neighbor_figure?(start)
     end
 
-    # A passing or neighbor figure of any length: the stepwise run through the
-    # note, out to the nearest consonant notes in both directions, moving in
-    # one direction (passing) or returning to its starting pitch (neighbor).
-    # A rest breaks the run.
+    # A passing or neighbor figure of any length, read as a ConsonantRun.
     def consonant_run?(note)
-      passing_run?(note) || returning_run?(note)
+      run = run_through(note)
+      run.passing? || run.returning?
     end
 
     # The passing half of a consonant run, which is all a dissonant half note
     # may be.
     def passing_run?(note)
-      run_intervals(note).map(&:direction).uniq.one?
+      run_through(note).passing?
     end
 
     private
 
-    def returning_run?(note)
-      run = stepwise_run(note)
-      run.any? && run.first.pitch == run.last.pitch
-    end
-
-    def run_intervals(note)
-      stepwise_run(note).each_cons(2).map { |pair| HeadMusic::Analysis::MelodicInterval.new(*pair) }
-    end
-
-    # The notes from the nearest consonance before the note to the nearest
-    # after it, or none where the line does not move by step between them.
-    def stepwise_run(note)
-      phrase = notes.slice_when { |earlier, later| earlier.next_position < later.position }.detect { |group| group.include?(note) }
-      index = phrase.index(note)
-      first = phrase.take(index).rindex { |candidate| consonant?(candidate) }
-      last = phrase.drop(index + 1).index { |candidate| consonant?(candidate) }
-      return [] unless first && last
-
-      run = phrase[first..(index + 1 + last)]
-      (run.each_cons(2).all? { |pair| HeadMusic::Analysis::MelodicInterval.new(*pair).step? }) ? run : []
+    def run_through(note)
+      HeadMusic::Style::Guideline::ConsonantRun.new(line: notes, note: note, dissonant: @dissonant)
     end
 
     def consonant?(note)
