@@ -26,7 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - A dissonant half-note neighbor tone, in `FloridDissonanceTreatment` and `FreeDissonanceTreatment`, and so in the fifth species, first three species, and free species guides: `e2 f2 | e`. A dissonance attacked as a half note or longer is treated only as a passing tone, as second species already treated it; `e2 f2 | g` still passes.
 
   Placement is read from the figure's dissonant note, by its position and the meter, not from where its first note was attacked. A cambiata whose first note is attacked on beat 3 and tied over the barline, with its dissonance on beat 2, begins on the downbeat and earns no mark of either kind (Fux's figure 87a). In free species the rules are read in whichever voice carries the figure, and a dissonance the other voice explains with a placed figure of its own is still unmarked. No row of the pinned corpus moves: its only two cambiatas, in Fux's figures 55 and 87a, begin on a downbeat with a quarter-note dissonance, it holds no double neighbor with a dissonant neighbor, and none of its attacked weak-beat dissonances is a half note or longer.
-- The instruction and violation of `ThirdSpeciesDissonanceTreatment` say where each figure begins: "Treat each dissonance as a passing tone, a neighbor tone, a cambiata begun on an accented beat, or a double neighbor begun on the downbeat." In en and en_GB, under the existing keys.
+- The dissonance guidelines' sentences say what they now ask, under their existing keys.
+  - `ThirdSpeciesDissonanceTreatment`, instruction and violation, in en and en_GB: "Treat each dissonance as a passing tone, a neighbor tone, a cambiata begun on an accented beat, or a double neighbor begun on the downbeat."
+  - `FloridDissonanceTreatment`, instruction and violation: "Treat each dissonance as a passing tone, a neighbor tone shorter than a half note, or a quarter note in a cambiata begun on an accented beat or in a double neighbor begun on the downbeat." The violation used to leave out the neighbor tone.
+  - `FreeDissonanceTreatment`, instruction, with the same figures in either voice. Its violation names no figure and is unchanged.
+  - The florid and free sentences name note values, so they are written in de, es, fr, it, and ru as well as en and en_GB, each with its own note names. Those five locales still read the guidelines' names, and the free violation, in English.
 
 ## [24.0.0] - 2026-11-16
 

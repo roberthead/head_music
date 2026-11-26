@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T18:42:00-08:00
   planned_at:   2026-11-24T19:15:02-08:00
   finished_at:
-  updated_at:   2026-11-25T13:29:59-08:00
+  updated_at:   2026-11-25T16:24:03-08:00
 -->
 
 # Story: Place the Cambiata and Double Neighbor in the Bar
@@ -23,7 +23,7 @@ SO THAT a leap from a dissonance is not excused by a shape that begins on the wr
 - **Note values.** In `FloridDissonanceTreatment` and `FreeDissonanceTreatment`, the dissonant notes of a cambiata and of a double neighbor must be quarter notes. A half note or an eighth in that place leaves the dissonance untreated. The figure's consonant notes may take any value. `ThirdSpeciesDissonanceTreatment` reads placement only and no note values
 - **The half note.** In the same two guidelines, a dissonance attacked as a half note or longer is treated only as a passing tone. A half-note neighbor tone, which the second species guide already marks, is marked in fifth species, first three species, and free species too
 - Free species follows fifth species in all of the above, read in whichever voice carries the figure. A dissonance the other voice explains with a figure of its own is still unmarked
-- **Messages.** The instruction and violation of the three dissonance guidelines say what they now ask: where each figure begins, that a dissonant half note may only pass, and, in the florid guideline, that a neighbor tone is accepted. Each guideline keeps one violation message and its existing keys, in en and en_GB
+- **Messages.** The instruction and violation of the three dissonance guidelines say what they now ask: where each figure begins, that a dissonant half note may only pass, and, in the florid guideline, that a neighbor tone is accepted. Each guideline keeps one violation message and its existing keys, in en and en_GB. The florid and free sentences name note values, so they are also written in de, es, fr, it, and ru (Rob, 2026-11-25, at implementation)
 - Rhythm is read from positions and the meter, not from beat numbers
 - Specs cover the double neighbor beginning on every beat of a 4/4 bar, with both neighbors dissonant and with one; the cambiata beginning on beats 1, 2, and 3 in all three guidelines, and on beat 4 in free species only, against a moving voice; a figure whose dissonant note is a half note and one whose dissonant note is an eighth; a half-note neighbor tone against a half-note passing tone; figure 87a's long first note; and a figure in the lower voice of a free species pair
 - The existing fixtures of published third and fifth species examples keep their marks, primary and secondary. The research found nothing that should move; any row that does is explained in the story
@@ -241,13 +241,14 @@ Implemented on 2026-11-25. Each number carries the commit it was measured at.
 | `8b8fec0d` | Two examples that isolate a clause each |
 | `5d71eac0` | `ConsonantRun`, extracted from `DissonanceFigures` |
 | `14684f6e` | The third species instruction and violation |
+| `553eb959` | The florid and free sentences, in seven locales |
 
 ### Measured
 
 - **The probe table.** The plan's eighteen lines, in 4/4 and 2/2, against the three guidelines, captured at `cb36c943` before the first edit and again after each step. At `d2c3167a` the misplaced figures gain the marks the plan lists and nothing else moves. At `6edffe76` three lines gain marks in the florid and free guidelines only: the cambiata with a half-note dissonance, the double neighbor in eighths, and the half-note neighbor tone. The marks in 2/2 are the marks in 4/4 at every step.
 - **The pinned corpus.** Regenerated at `d2c3167a` and at `6edffe76`: 0 of 5,808 rows differ. At `0a55d7b7`, 576 rows gain an item, the gated rows of `third_species_harmony`, `first_three_species_harmony`, `fifth_species_harmony`, `free_species_harmony`, and their four composites, 72 each. 224 of them rise, 28 in each guide, by at most 0.008920 (`third_species_triple_meter_examples-0-v1` under `third_species_harmony`, 0.839442 to 0.848362). 352 move in item count only. No row's fitness falls, and no row's message count or adherence changes, so no voice in the corpus is marked by the new guideline.
 - **Fixtures.** The Fux fixture specs pass unchanged at every commit. No mark moved, primary or secondary.
-- **Suite.** `rake validate` at `8b8fec0d`: 19,411 examples, 0 failures, no lint offenses, no vulnerabilities, and RubyCritic exit 1 for one file graded D. After `5d71eac0`, `rake rubycritic` exits 0 with no file below C.
+- **Suite.** `rake validate` at `8b8fec0d`: 19,411 examples, 0 failures, no lint offenses, no vulnerabilities, and RubyCritic exit 1 for one file graded D. After `5d71eac0`, `rake rubycritic` exits 0 with no file below C. `rake validate` at `553eb959`: 19,421 examples, 0 failures, exit 0.
 
 ### Checked by deletion
 
@@ -279,6 +280,20 @@ Two clauses could not fail on the lines the plan gave, and each has a line of it
 - **`DissonanceFigures#dissonant?` and `#dissonant_among`** are public, beyond the two methods the plan listed. The note-value check has to tell a double neighbor's dissonant neighbors from its consonant ones.
 - **The secondary guideline's half-note example is vacuous for its quarter-note clause.** An accented onset is read within the note's bar, so a half-note dissonance has the downbeat as its onset or none. The spec keeps the plan's line and adds the eighth-note line that the clause is for.
 - **`guide_strings_spec.rb`'s registry canary** went from 77 items to 78.
+- **The florid and free sentences are in seven locales, not two.** The plan said no other locale carries these keys, which was true and not enough. The drafted sentences name the half note and the quarter note, de, fr, it, and ru fall back through en_GB, and es falls back to en, so `guide_strings_spec.rb`'s "gives every locale only the note vocabulary it owns" failed for all five on three strings each. Rob chose on 2026-11-25 to write the fifteen sentences in this story rather than split them out or drop the note values. They follow the seven guidelines those locales already carry: infinitive sentences in each file's own note names, with the name and the free violation still falling back to English. Removing the entries makes the same example fail, which is the guard. The third species sentences name no note value and are in en and en_GB only.
+
+### Terms new to the five locales
+
+The words for passing tone, neighbor tone, and strong beat were already in each file. These were not, and are worth a reader's check:
+
+| Term | de | es | fr | it | ru |
+| --- | --- | --- | --- | --- | --- |
+| cambiata | Cambiata | cambiata | cambiata | nota cambiata | камбиата |
+| double neighbor | doppelte Wechselnote | doble bordadura | double broderie | doppia nota di volta | опевание |
+| suspension | Vorhalt | retardo | retard | ritardo | задержание |
+| first beat of the bar | erste Zählzeit des Takts | primer tiempo del compás | premier temps de la mesure | primo tempo della battuta | первая доля такта |
+
+Checked on the web on 2026-11-25. Sourced: "double broderie" and "cambiata" (Alan Belkin's counterpoint text in French), "doble bordado" beside this file's "bordadura" (the same text in Spanish), "doppia nota di volta", "nota cambiata", and "ritardo" (Italian course notes at diariomusicale.com and appunticontrappunti.wordpress.com), "камбиата", "опевание", and "задержание" (Russian counterpoint lessons at kuzn-guitar.school and musicfancy.net), and "Cambiata" and "Vorhalt" (de.wikipedia.org/wiki/Wechselnote and openmusic.academy). **Not sourced: "doppelte Wechselnote".** None of three German pages read names the figure; Dommer (1865) describes "die um den Hauptton sich herumbewegenden Figuren" without a term. The phrase is built from this file's "Wechselnote". The sentences themselves were written by Claude and read by no native speaker.
 
 ### Open
 
@@ -301,4 +316,4 @@ Found with `grep -rli "cambiata\|double neighbor\|neighbor tone" ../bardtheory/d
 - **Lesson `the-neighbor-tone`.** Written for triple meter; add a pointer to the half-note rule where the mixed species are introduced.
 - **Exercises.** `counterpoint-third-species-intro`, `third-species-davis-g-major-2`, `third-species-schoenberg-a-major`, and `third-species-schoenberg-eb-major` say dissonant weak beats "must be passing tones, neighbor tones, or part of a nota cambiata". `combined-123-davis-c-major-1`, `fifth-species-schoenberg-eb-major`, `free-species-c-major`, and `free-species-d-dorian` name neighbor tones on weak beats. Check each sentence, and each exercise's model answer, against the new marks.
 - **The new guideline.** `BeginCambiataOnDownbeat` appears in the third species, first three species, fifth species, and free species exercises with its own name and message.
-- **Displayed messages.** The third species violation is reworded and longer; check how it reads beside a mark.
+- **Displayed messages.** The third species and florid violations are reworded, and the florid one grows from 15 words to 36; check how each reads beside a mark.
