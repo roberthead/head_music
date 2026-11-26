@@ -504,6 +504,12 @@ it:
           instruction: "Aprire la prima battuta con una semibreve."
           violations:
             default: "Iniziare la prima battuta con una semibreve."
+        florid_dissonance_treatment:
+          instruction: "Fuori dal primo tempo della battuta, raggiungere ogni dissonanza come nota di passaggio, come nota di volta più breve di una minima, o come semiminima in una nota cambiata iniziata su un tempo forte o in una doppia nota di volta iniziata sul primo tempo."
+          violations:
+            default: "Trattare ogni dissonanza come nota di passaggio, come nota di volta più breve di una minima, o come semiminima in una nota cambiata iniziata su un tempo forte o in una doppia nota di volta iniziata sul primo tempo della battuta."
+        free_dissonance_treatment:
+          instruction: "Spiegare ogni dissonanza tra le due voci: nell'una o nell'altra come nota di passaggio, come nota di volta più breve di una minima, o come semiminima in una nota cambiata iniziata su un tempo forte o in una doppia nota di volta iniziata sul primo tempo della battuta; oppure come ritardo preparato e risolto per grado congiunto discendente. Non attaccare alcuna dissonanza sul primo tempo della battuta."
         note_count_per_bar:
           name: "%{number} %{rhythmic_unit} per battuta"
           instruction: "In ogni battuta intermedia, scrivere %{number} %{rhythmic_unit}."

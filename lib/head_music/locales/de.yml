@@ -523,6 +523,12 @@ de:
           instruction: "Im ersten Takt mit einer Ganzen eröffnen."
           violations:
             default: "Im ersten Takt mit einer Ganzen beginnen."
+        florid_dissonance_treatment:
+          instruction: "Abseits der ersten Zählzeit des Takts jede Dissonanz als Durchgangsnote erreichen, als Wechselnote, die kürzer als eine Halbe ist, oder als Viertel in einer Cambiata, die auf einer schweren Zählzeit beginnt, oder in einer doppelten Wechselnote, die auf der ersten Zählzeit beginnt."
+          violations:
+            default: "Jede Dissonanz als Durchgangsnote behandeln, als Wechselnote, die kürzer als eine Halbe ist, oder als Viertel in einer Cambiata, die auf einer schweren Zählzeit beginnt, oder in einer doppelten Wechselnote, die auf der ersten Zählzeit des Takts beginnt."
+        free_dissonance_treatment:
+          instruction: "Jede Dissonanz zwischen den beiden Stimmen erklären: in einer der beiden als Durchgangsnote, als Wechselnote, die kürzer als eine Halbe ist, oder als Viertel in einer Cambiata, die auf einer schweren Zählzeit beginnt, oder in einer doppelten Wechselnote, die auf der ersten Zählzeit des Takts beginnt; oder als Vorhalt, der vorbereitet und schrittweise abwärts aufgelöst wird. Auf der ersten Zählzeit des Takts keine Dissonanz anschlagen."
         note_count_per_bar:
           name: "%{number} %{rhythmic_unit} pro Takt"
           instruction: "In jedem mittleren Takt %{number} %{rhythmic_unit} schreiben."

@@ -516,6 +516,12 @@ fr:
           instruction: "Ouvrir la première mesure par une ronde."
           violations:
             default: "Commencer la première mesure par une ronde."
+        florid_dissonance_treatment:
+          instruction: "Hors du premier temps de la mesure, aborder chaque dissonance comme note de passage, comme broderie plus brève qu'une blanche, ou comme noire dans une cambiata commencée sur un temps fort ou dans une double broderie commencée sur le premier temps."
+          violations:
+            default: "Traiter chaque dissonance comme note de passage, comme broderie plus brève qu'une blanche, ou comme noire dans une cambiata commencée sur un temps fort ou dans une double broderie commencée sur le premier temps de la mesure."
+        free_dissonance_treatment:
+          instruction: "Expliquer chaque dissonance entre les deux voix : dans l'une ou l'autre comme note de passage, comme broderie plus brève qu'une blanche, ou comme noire dans une cambiata commencée sur un temps fort ou dans une double broderie commencée sur le premier temps de la mesure ; ou comme retard préparé et résolu par degré conjoint descendant. N'attaquer aucune dissonance sur le premier temps de la mesure."
         note_count_per_bar:
           name: "%{number} %{rhythmic_unit} par mesure"
           instruction: "Dans chaque mesure intermédiaire, écrire %{number} %{rhythmic_unit}."

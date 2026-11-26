@@ -37,7 +37,7 @@ GUIDE_ITEM_STRINGS = [
   ["FirstBarHalfNotes", {}, "Begin the first bar with half notes, or enter after a half rest."],
   ["FirstBarQuarterNotes", {}, "Begin the first bar with quarter notes, or enter after a quarter rest."],
   ["FirstBarWholeNote", {}, "Begin with a whole note in the first bar."],
-  ["FloridDissonanceTreatment", {}, "Treat each dissonance as a passing tone, cambiata, or double neighbor on a weak beat."],
+  ["FloridDissonanceTreatment", {}, "Treat each dissonance as a passing tone, a neighbor tone shorter than a half note, or a quarter note in a cambiata begun on an accented beat or in a double neighbor begun on the downbeat."],
   ["FourPerBar", {}, "Use four quarter notes in each middle bar."],
   ["FreeDissonanceTreatment", {}, "Explain each dissonance as a figure in either voice or as a prepared suspension resolving down by step; attack no dissonance on a downbeat."],
   ["FrequentDirectionChanges", {}, "Change melodic direction frequently."],
