@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T18:42:00-08:00
   planned_at:   2026-11-24T19:15:02-08:00
   finished_at:
-  updated_at:   2026-11-25T16:24:03-08:00
+  updated_at:   2026-11-27T11:10:16-08:00
 -->
 
 # Story: Place the Cambiata and Double Neighbor in the Bar
@@ -20,6 +20,7 @@ SO THAT a leap from a dissonance is not excused by a shape that begins on the wr
 - **Placement, primary.** The dissonance guidelines (`ThirdSpeciesDissonanceTreatment`, `FloridDissonanceTreatment`, `FreeDissonanceTreatment`) recognize a double neighbor only where it begins on a downbeat, and a nota cambiata only where it begins on an accented beat. A figure placed elsewhere excuses nothing: each of its dissonant notes that is not a passing or neighbor tone in its own right earns the guideline's existing mark. No new string key is needed for this
 - Placement is read from where the figure's dissonant notes fall, not from where its first note is attacked, so a first note tied over a barline does not move the figure. Fux's figure 87a, whose first note is attacked on beat 3 and tied into the bar that holds the dissonance on beat 2, stays a cambiata begun on a downbeat and earns no mark of either kind
 - **Placement, secondary.** A new weak secondary guideline prefers the cambiata begun on a downbeat: a cambiata begun on the bar's other accented beat, whose dissonance is treated, earns one mark. It is in every harmony guide that recognizes the cambiata: third species, first three species, fifth species, and free species. It has a name, an instruction, and a violation message in en, and in en_GB wherever the spelling differs
+- **Continuation.** `ContinueAfterDoubleNeighbor` reads only a double neighbor that all three dissonance guidelines recognize: begun on a downbeat, returning within the bar, with its dissonant neighbors in quarter notes. A shape they refuse earns their mark and no continuation mark (Rob, 2026-11-27, at implementation)
 - **Note values.** In `FloridDissonanceTreatment` and `FreeDissonanceTreatment`, the dissonant notes of a cambiata and of a double neighbor must be quarter notes. A half note or an eighth in that place leaves the dissonance untreated. The figure's consonant notes may take any value. `ThirdSpeciesDissonanceTreatment` reads placement only and no note values
 - **The half note.** In the same two guidelines, a dissonance attacked as a half note or longer is treated only as a passing tone. A half-note neighbor tone, which the second species guide already marks, is marked in fifth species, first three species, and free species too
 - Free species follows fifth species in all of the above, read in whichever voice carries the figure. A dissonance the other voice explains with a figure of its own is still unmarked
@@ -229,7 +230,7 @@ Checked by deletion: remove each clause in turn (the accented onset, the downbea
 
 ## Implementation Notes
 
-Implemented on 2026-11-25. Each number carries the commit it was measured at.
+Implemented on 2026-11-25, with the continuation criterion added on 2026-11-27. Each number carries the commit it was measured at.
 
 ### Commits
 
@@ -242,13 +243,15 @@ Implemented on 2026-11-25. Each number carries the commit it was measured at.
 | `5d71eac0` | `ConsonantRun`, extracted from `DissonanceFigures` |
 | `14684f6e` | The third species instruction and violation |
 | `553eb959` | The florid and free sentences, in seven locales |
+| `b52180f5` | `ContinueAfterDoubleNeighbor` reads only a recognized double neighbor |
 
 ### Measured
 
 - **The probe table.** The plan's eighteen lines, in 4/4 and 2/2, against the three guidelines, captured at `cb36c943` before the first edit and again after each step. At `d2c3167a` the misplaced figures gain the marks the plan lists and nothing else moves. At `6edffe76` three lines gain marks in the florid and free guidelines only: the cambiata with a half-note dissonance, the double neighbor in eighths, and the half-note neighbor tone. The marks in 2/2 are the marks in 4/4 at every step.
 - **The pinned corpus.** Regenerated at `d2c3167a` and at `6edffe76`: 0 of 5,808 rows differ. At `0a55d7b7`, 576 rows gain an item, the gated rows of `third_species_harmony`, `first_three_species_harmony`, `fifth_species_harmony`, `free_species_harmony`, and their four composites, 72 each. 224 of them rise, 28 in each guide, by at most 0.008920 (`third_species_triple_meter_examples-0-v1` under `third_species_harmony`, 0.839442 to 0.848362). 352 move in item count only. No row's fitness falls, and no row's message count or adherence changes, so no voice in the corpus is marked by the new guideline.
 - **Fixtures.** The Fux fixture specs pass unchanged at every commit. No mark moved, primary or secondary.
-- **Suite.** `rake validate` at `8b8fec0d`: 19,411 examples, 0 failures, no lint offenses, no vulnerabilities, and RubyCritic exit 1 for one file graded D. After `5d71eac0`, `rake rubycritic` exits 0 with no file below C. `rake validate` at `553eb959`: 19,421 examples, 0 failures, exit 0.
+- **Suite.** `rake validate` at `8b8fec0d`: 19,411 examples, 0 failures, no lint offenses, no vulnerabilities, and RubyCritic exit 1 for one file graded D. After `5d71eac0`, `rake rubycritic` exits 0 with no file below C. `rake validate` at `553eb959`: 19,421 examples, 0 failures, exit 0. At `b52180f5`: 19,423 examples, 0 failures, exit 0, RubyCritic 83.46.
+- **The continuation guideline.** Before `b52180f5`, five lines that leave the figure by leap were probed against the third species and florid guidelines and `ContinueAfterDoubleNeighbor`. Four earned a continuation mark on a shape at least one dissonance guideline had refused: quarters from beat 2 (`g e f d | e | g`), half notes (`e2 f2 | d2 e2 | a`), a half note then quarters (`e2 f d | e2 a2`), and eighths from the downbeat (`e/ f/ d/ e/ g2`), which only the florid and free guidelines refuse. At `b52180f5` none of the four is marked, and quarters from the downbeat (`e f d e | g`) still is. The corpus snapshot regenerated at `b52180f5` is identical: 0 of 5,808 rows differ.
 
 ### Checked by deletion
 
@@ -268,6 +271,13 @@ At `8b8fec0d`, each clause removed in turn against `spec/head_music/style/guidel
 | The secondary guideline's placement | 1: "the shape begun on beat 2" |
 | The secondary guideline's downbeat | 3: the downbeat cambiata in 4/4 and 2/2, and figure 87a's shape |
 
+At `b52180f5`, against `continue_after_double_neighbor_spec.rb`:
+
+| Clause removed | Examples that fail |
+| --- | --- |
+| The filter, so every double neighbor is read | 5: the shape begun on the second beat, on the third beat, in half notes, mixing half notes and quarters, and in eighth notes |
+| The quarter notes, so placement alone is asked | 1: "when it is in eighth notes from the downbeat" |
+
 Two clauses could not fail on the lines the plan gave, and each has a line of its own in `8b8fec0d`:
 
 - **The double neighbor's downbeat.** In quarter notes the same-bar clause already refuses every double neighbor that begins after beat 3, since its return falls in the next bar. Only a figure in eighths begins after beat 3 and returns within the bar, and only third species accepts eighths, so the example is `e2 e/ f/ d/ e/ | c` there.
@@ -281,6 +291,8 @@ Two clauses could not fail on the lines the plan gave, and each has a line of it
 - **The secondary guideline's half-note example is vacuous for its quarter-note clause.** An accented onset is read within the note's bar, so a half-note dissonance has the downbeat as its onset or none. The spec keeps the plan's line and adds the eighth-note line that the clause is for.
 - **`guide_strings_spec.rb`'s registry canary** went from 77 items to 78.
 - **The florid and free sentences are in seven locales, not two.** The plan said no other locale carries these keys, which was true and not enough. The drafted sentences name the half note and the quarter note, de, fr, it, and ru fall back through en_GB, and es falls back to en, so `guide_strings_spec.rb`'s "gives every locale only the note vocabulary it owns" failed for all five on three strings each. Rob chose on 2026-11-25 to write the fifteen sentences in this story rather than split them out or drop the note values. They follow the seven guidelines those locales already carry: infinitive sentences in each file's own note names, with the name and the free violation still falling back to English. Removing the entries makes the same example fail, which is the guard. The third species sentences name no note value and are in en and en_GB only.
+
+- **`ContinueAfterDoubleNeighbor` reads only a recognized double neighbor.** The plan left the guideline alone, and at `5d71eac0` it still marked the leap out of a shape the dissonance guideline had just refused, so one line was told both that the shape was no double neighbor and how to leave one. Salzer and Schachter say a double neighbor off the downbeat "will cease to sound like the decoration of a single tone", so there is no static area to continue out of. Rob chose on 2026-11-27 to restrict it in this story, with one test for every guide over a per-guide option. The test is `FigurePlacement#recognized_double_neighbor?`, which the dissonance guidelines now ask too. Its cost is in third species alone: the eighth-note figure from the downbeat, which `ThirdSpeciesDissonanceTreatment` accepts, earns no continuation mark, though the third species melody guide marks its rhythm. Two examples in the guideline's spec that pinned a mark on a half-note figure now pin its absence.
 
 ### Terms new to the five locales
 
@@ -297,7 +309,6 @@ Checked on the web on 2026-11-25. Sourced: "double broderie" and "cambiata" (Ala
 
 ### Open
 
-- **`ContinueAfterDoubleNeighbor` still reads a double neighbor the dissonance guideline has refused.** `g e f d | e | g` over C, C, E earns two primary marks for F and D and a secondary mark for the leap that follows. Salzer and Schachter say a double neighbor off the downbeat "will cease to sound like the decoration of a single tone", which argues that the continuation advice no longer applies. Checked at `5d71eac0`; not changed, since no criterion asks for it and it is a different guideline's rule.
 - **Meters other than 4/4 and 2/2** are not pinned, as the plan said.
 - **The release bump** is still to be settled.
 
