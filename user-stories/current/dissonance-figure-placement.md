@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T18:42:00-08:00
   planned_at:   2026-11-24T19:15:02-08:00
   finished_at:
-  updated_at:   2026-11-27T12:15:04-08:00
+  updated_at:   2026-11-27T12:37:03-08:00
 -->
 
 # Story: Place the Cambiata and Double Neighbor in the Bar
@@ -330,3 +330,39 @@ Found with `grep -rli "cambiata\|double neighbor\|neighbor tone" ../bardtheory/d
 - **The new guideline.** `BeginCambiataOnDownbeat` appears in the third species, first three species, fifth species, and free species exercises with its own name and message.
 - **Displayed messages.** The third species and florid violations are reworded to one sentence, "Treat each dissonance as a passing tone, a neighbor tone, a cambiata, or a double neighbor."
 - **The definitions now carry the placement.** The gem's messages name each figure and no longer say where it begins or what note values it takes, so the dictionary entries and lessons above are the only place a student is told. The half-note rule for the neighbor tone is in no message at all.
+
+## Review
+
+Reviewed on 2026-11-27 at `d1998328`, with no uncommitted changes. An independent agent read the story and the diff, and every finding below was reproduced against this branch and `main`. The style specs pass (2,437 examples), and rubocop and `git diff --check` are clean.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| 1 | Placement, primary | ✅ | `figure_placement.rb:20-49`, called at `third_species_dissonance_treatment.rb:15`, `florid_dissonance_treatment.rb:32`, `free_dissonance_treatment.rb:97`; `spec/support/dissonance_figure_placement.rb:13-92` |
+| 2 | Placement read from the dissonant notes; figure 87a | ✅ | `figure_placement.rb:54-60`; `dissonance_figure_placement.rb:70-72`, `begin_cambiata_on_downbeat_spec.rb:55-61` |
+| 3 | Placement, secondary | ✅ | `begin_cambiata_on_downbeat.rb`; four guides' secondary tiers; `en.yml:832-836`, no en_GB spelling differs |
+| 4 | Continuation | ✅ | `continue_after_double_neighbor.rb:29-31`; `continue_after_double_neighbor_spec.rb:91-127` |
+| 5 | Note values | ✅ | `figure_placement.rb:26,34`; `dissonance_figure_placement.rb:119-149`; third species pins its two unmarked lines |
+| 6 | The half note | ✅ | `florid_dissonance_treatment.rb:30`, `free_dissonance_treatment.rb:95`; `dissonance_figure_placement.rb:104-117` |
+| 7 | Free species, either voice | ✅ | `free_dissonance_treatment_spec.rb:229-294` |
+| 8 | Messages | ✅ | `en.yml:903-905,1058-1060`, `en_GB.yml:134-136,151-153`; free strings unchanged; `guide_item_strings_spec.rb:40,87` |
+| 9 | Rhythm from positions and the meter | ✅ | `accented_onset` reads `counts_per_bar` and `Position#strong?`; 2/2 pinned. See finding 1 for its effect in triple meter |
+| 10 | Specs | ⚠️ | Two double neighbor cases are missing: from beat 4 with both neighbors dissonant (`e e e e \| f d e2`) is in no spec, and from beat 3 with both dissonant is in the florid and free specs only, not third species |
+| 11 | Published fixtures keep their marks | ✅ | Fux fixture specs pass; no row's message count changes |
+| 12 | Corpus regenerated, falls listed | ✅ | 576 of 5,808 rows change, in item count and fitness only; 224 rise, at most 0.008920; none falls |
+| 13 | CHANGELOG | ⚠️ | Names the 4/4 and 2/2 shapes, but not the triple-meter shapes the branch newly marks (finding 1) |
+| 14 | BardTheory follow-up | ✅ | `## BardTheory follow-up` |
+
+### Findings
+
+1. **In triple meter, shapes that passed on `main` are now marked, and neither the story nor the CHANGELOG says so.**
+   - A double neighbor in quarter notes can never be recognized in 3/4: four quarters do not fit in the bar, so the same-bar clause (`figure_placement.rb:48`) always fails. `e f d | e2 g | c'3` over a held C is unmarked on `main`, and on the branch all three dissonance guidelines mark F and D. `ContinueAfterDoubleNeighbor` therefore never reads a quarter-note figure in 3/4.
+   - In 3/2, a cambiata begun on the second half-note beat is now marked: `e2 c' b g a | b6` over C and E is unmarked on `main`, and all three guidelines mark the B. The Risks section foresaw this one, and the Open list says only that these meters are "not pinned".
+   - Third species in triple meter uses `TripleMeterDissonanceTreatment`, so it is unaffected. Fifth species, first three species, and free species run the florid and free guidelines in any meter.
+   - The same-bar clause is Claude's reading, and the Decisions record that it "was not put to Rob as its own question". It needs a decision for 3/4 before `finish`: keep it, or let a 3/4 double neighbor return on the next downbeat. Then pin the result and add it to the CHANGELOG.
+2. **Third species placement depends on note values after all.** A figure's onset is "one of the note's own value after a strong beat", so a figure whose first note and neighbors differ in value can be refused for that reason. `g a/ f/ g2 | c4` over C begins on the downbeat and returns within the bar, yet `ThirdSpeciesDissonanceTreatment` now marks F; `main` did not. The comment at `third_species_dissonance_treatment.rb:6-8` says note values are the melody guide's to judge. The third species melody guide marks the eighths anyway, so the practical effect is small.
+3. **`BeginCambiataOnDownbeat` skips a cambiata the third species guideline accepts.** Its quarter-note filter (`begin_cambiata_on_downbeat.rb:28`) applies in third species too, where the primary guideline reads no note values. `e2 c'/ b/ g | a b3` over C and D passes `ThirdSpeciesDissonanceTreatment` and earns no secondary mark. The comment at `begin_cambiata_on_downbeat.rb:23-24` gives a reason that holds only in the florid and free guidelines. This is low severity, since the melody guide marks the eighth.
+4. **A quarter tied to a quarter counts as a half note.** `half_note_or_longer?` reads total duration, as the plan said it would, so `e f-f e | c4` over C is marked in the florid and free guidelines as a half-note neighbor tone. This follows the Decision on half notes; it is recorded here so it is not mistaken for a bug.
+
+No convention problems were found: no assignment in a condition, no stdout assertions, `described_class` throughout, and every changed file ends with a newline. RubyCritic grades and the suite counts in the Implementation Notes were not rechecked.
