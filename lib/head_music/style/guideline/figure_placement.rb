@@ -27,9 +27,11 @@ class HeadMusic::Style::Guideline
     end
 
     def placed_double_neighbor_member?(figures, note, quarters:)
-      figures.double_neighbors_with(note).any? do |figure|
-        double_neighbor_placed?(figure) && (!quarters || figures.dissonant_among(figure).all? { |neighbor| quarter_note?(neighbor) })
-      end
+      figures.double_neighbors_with(note).any? { |figure| recognized_double_neighbor?(figures, figure, quarters: quarters) }
+    end
+
+    def recognized_double_neighbor?(figures, figure, quarters:)
+      double_neighbor_placed?(figure) && (!quarters || figures.dissonant_among(figure).all? { |neighbor| quarter_note?(neighbor) })
     end
 
     def cambiata_placed?(dissonance)

@@ -80,35 +80,49 @@ describe HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor do
     end
   end
 
-  context "when the figure is in half notes" do
-    let(:lower) { "C4|C4|D4|]" }
+  context "when the first note is tied over the barline and the line leaps on" do
+    let(:upper) { "g2 e2-|e f d e|g4|]" }
+    let(:lower) { "C4|C4|E4|]" }
 
-    context "with a step on" do
-      let(:upper) { "e2 f2|d2 e2|f4|]" }
-
-      it { is_expected.to be_adherent }
-    end
-
-    context "with a leap" do
-      let(:upper) { "e2 f2|d2 e2|a4|]" }
-
-      it { expect(assessment.marks_count).to eq 1 }
-    end
+    it { expect(assessment.marks_count).to eq 1 }
   end
 
-  context "when the figure mixes half notes and quarters" do
-    let(:lower) { "C4|C2 D2|]" }
-
-    context "with a step on" do
-      let(:upper) { "e2 f d|e2 f2|]" }
+  # The dissonance guidelines refuse these shapes as double neighbors, so
+  # their leaps away are not graded as leaving one.
+  context "with a shape the dissonance guidelines do not read as a double neighbor" do
+    context "when it begins on the second beat" do
+      let(:upper) { "g e f d|e4|g4|]" }
+      let(:lower) { "C4|C4|E4|]" }
 
       it { is_expected.to be_adherent }
     end
 
-    context "with a leap" do
-      let(:upper) { "e2 f d|e2 a2|]" }
+    context "when it begins on the third beat" do
+      let(:upper) { "g2 e f|d e g2|]" }
+      let(:lower) { "C4|C2 E2|]" }
 
-      it { expect(assessment.marks_count).to eq 1 }
+      it { is_expected.to be_adherent }
+    end
+
+    context "when it is in half notes" do
+      let(:upper) { "e2 f2|d2 e2|a4|]" }
+      let(:lower) { "C4|C4|D4|]" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "when it mixes half notes and quarters" do
+      let(:upper) { "e2 f d|e2 a2|]" }
+      let(:lower) { "C4|C2 D2|]" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "when it is in eighth notes from the downbeat" do
+      let(:upper) { "e/ f/ d/ e/ g2|c'4|]" }
+      let(:lower) { "C4|C4|]" }
+
+      it { is_expected.to be_adherent }
     end
   end
 
