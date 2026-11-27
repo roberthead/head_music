@@ -900,12 +900,12 @@ en:
             default: "Begin with a whole note in the first bar."
         florid_dissonance_treatment:
           name: "Florid dissonance treatment"
-          instruction: "Off the downbeat, reach every dissonance as a passing tone, a neighbor tone shorter than a half note, or a quarter note in a cambiata begun on an accented beat or in a double neighbor begun on the downbeat."
+          instruction: "Off the downbeat, reach every dissonance as a passing tone, a neighbor tone, a cambiata, or a double neighbor."
           violations:
-            default: "Treat each dissonance as a passing tone, a neighbor tone shorter than a half note, or a quarter note in a cambiata begun on an accented beat or in a double neighbor begun on the downbeat."
+            default: "Treat each dissonance as a passing tone, a neighbor tone, a cambiata, or a double neighbor."
         free_dissonance_treatment:
           name: "Free dissonance treatment"
-          instruction: "Explain every dissonance between the two voices: in either voice as a passing tone, a neighbor tone shorter than a half note, or a quarter note in a cambiata begun on an accented beat or in a double neighbor begun on the downbeat; or as a suspension prepared and resolved down by step. Attack no dissonance on a downbeat."
+          instruction: "Explain every dissonance between the two voices: as a passing tone, neighbor tone, cambiata, or double neighbor in either voice, or as a suspension prepared and resolved down by step. Attack no dissonance on a downbeat."
           violations:
             default: "Explain each dissonance as a figure in either voice or as a prepared suspension resolving down by step; attack no dissonance on a downbeat."
         frequent_direction_changes:
@@ -1055,9 +1055,9 @@ en:
             default: "Sustain a note across the barline into most downbeats, breaking the syncopation only rarely."
         third_species_dissonance_treatment:
           name: "Third species dissonance treatment"
-          instruction: "Reach every dissonance as a passing tone, a neighbor tone, a cambiata begun on an accented beat, or a double neighbor begun on the downbeat."
+          instruction: "Reach every dissonance as a passing tone, a neighbor tone, a cambiata, or a double neighbor."
           violations:
-            default: "Treat each dissonance as a passing tone, a neighbor tone, a cambiata begun on an accented beat, or a double neighbor begun on the downbeat."
+            default: "Treat each dissonance as a passing tone, a neighbor tone, a cambiata, or a double neighbor."
         triple_meter_dissonance_treatment:
           name: "Triple meter dissonance treatment"
           instruction: "Reach every dissonance as a passing tone or a neighbor tone."

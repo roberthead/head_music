@@ -506,12 +506,6 @@ es:
           instruction: "Abrir el primer compás con una redonda."
           violations:
             default: "Comenzar el primer compás con una redonda."
-        florid_dissonance_treatment:
-          instruction: "Fuera del primer tiempo del compás, alcanzar cada disonancia como nota de paso, como bordadura más breve que una blanca, o como negra en una cambiata iniciada en un tiempo fuerte o en una doble bordadura iniciada en el primer tiempo."
-          violations:
-            default: "Tratar cada disonancia como nota de paso, como bordadura más breve que una blanca, o como negra en una cambiata iniciada en un tiempo fuerte o en una doble bordadura iniciada en el primer tiempo del compás."
-        free_dissonance_treatment:
-          instruction: "Explicar cada disonancia entre las dos voces: en cualquiera de ellas como nota de paso, como bordadura más breve que una blanca, o como negra en una cambiata iniciada en un tiempo fuerte o en una doble bordadura iniciada en el primer tiempo del compás; o como retardo preparado y resuelto por grado conjunto descendente. No atacar ninguna disonancia en el primer tiempo del compás."
         note_count_per_bar:
           name: "%{number} %{rhythmic_unit} por compás"
           instruction: "En cada compás intermedio, escribir %{number} %{rhythmic_unit}."
