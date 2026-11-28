@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-11-24T15:35:04-08:00
   activated_at: 2026-11-24T18:42:00-08:00
   planned_at:   2026-11-24T19:15:02-08:00
-  finished_at:
-  updated_at:   2026-11-28T10:21:07-08:00
+  finished_at:  2026-11-28T10:30:16-08:00
+  updated_at:   2026-11-28T10:30:16-08:00
 -->
 
 # Story: Place the Cambiata and Double Neighbor in the Bar
@@ -384,3 +384,12 @@ No convention problems were found: no assignment in a condition, no stdout asser
 ### Resolved after the review
 
 At `96c29b7f`. Finding 1: Rob chose on 2026-11-28 that a 3/4 double neighbor returns on the next downbeat (see Decisions). The 3/4 lines are pinned in the shared placement examples and the continuation spec, and the CHANGELOG names the 3/4 rule and the 3/2 cambiata. Criterion 10: the double neighbor from beat 4 with both neighbors dissonant is pinned in all three guidelines, and from beat 3 in third species. Criteria 10 and 13 are now met. Findings 2 to 4 stand as written.
+
+## Learnings
+
+- **A rule stated per bar needs probing in triple meter before it ships.** "Returns within the bar" was read from 4/4, where it held, and it refused every quarter-note double neighbor in 3/4. The pinned corpus holds no mixed-species example in triple meter, so its unchanged snapshot was no evidence, and third species in triple meter runs its own `TripleMeterDissonanceTreatment`, so the third species fixtures could not catch it either. Only the review's probe in 3/4 and 3/2 against `main` found it. When a guideline reads the bar, probe 3/4 and 3/2 beside 4/4 and 2/2 against `main` during planning.
+- **A sentence that names a note value has to be written in all seven locales.** de, fr, it, and ru fall back through en_GB, and es falls back to en, so `guide_strings_spec.rb`'s "gives every locale only the note vocabulary it owns" fails for each locale that would show an English or British note name. Drafting "a half note" into a message turned one string change into fifteen translated sentences, which were later removed.
+- **Rob wants a message to name a figure, not restate its definition.** Where a figure may begin and what note values it takes belong to what a cambiata or a double neighbor is, so the violation sentence lists the figures and the teaching goes to BardTheory's lessons and dictionary. He accepted that a half-note neighbor tone is marked by a sentence that lists the neighbor tone.
+- **A secondary guideline that grades a figure should read only the figures the primary guidelines accept.** `ContinueAfterDoubleNeighbor` graded the exit from shapes the dissonance guideline had just refused, so one line was told both that a shape was no double neighbor and how to leave one. Ask the same predicate the primary guideline asks.
+- **`HeadMusic::Content::Position` adds across a barline but does not subtract.** A negative `advance` leaves a position like `3:-3:000` that still answers `strength`, so look for an earlier beat by walking forward from the bar's strong beats. `Position#start_of_next_bar` names the next downbeat directly.
+- **RubyCritic fell on a file the plan was not watching.** The plan watched `free_dissonance_treatment.rb`, but the D grade came from `dissonance_figures.rb`, the shared module everything was added to. Check the grade of every touched file, and expect a shared helper module to be the one that grows.
