@@ -6,7 +6,7 @@ describe HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor do
   let(:flow) do
     HeadMusic::Notation::ABC.parse(<<~ABC)
       X:1
-      M:4/4
+      M:#{meter}
       L:1/4
       K:C
       V:upper
@@ -15,6 +15,7 @@ describe HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor do
       #{lower}
     ABC
   end
+  let(:meter) { "4/4" }
   let(:graded_voice) { flow.voices.first }
 
   context "with the upper neighbor first" do
@@ -123,6 +124,27 @@ describe HeadMusic::Style::Guidelines::ContinueAfterDoubleNeighbor do
       let(:lower) { "C4|C4|]" }
 
       it { is_expected.to be_adherent }
+    end
+  end
+
+  # Four quarters do not fit in the bar, so the figure returns on the next
+  # downbeat and is left from there.
+  context "with a double neighbor in three-four time" do
+    let(:meter) { "3/4" }
+    let(:lower) { "C3|C3|C3|]" }
+
+    context "when the line steps on in the direction of the last step" do
+      let(:upper) { "e f d|e f g|c'3|]" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "when the line leaps on" do
+      let(:upper) { "e f d|e2 a|c'3|]" }
+
+      it "marks the last note of the figure and the note that leaves it" do
+        expect(assessment.marks.map(&:code)).to eq ["2:1:000 to 3:1:000"]
+      end
     end
   end
 

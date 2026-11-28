@@ -41,6 +41,25 @@ describe HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment do
     end
   end
 
+  # A downbeat dissonance is not this guideline's to judge, so only the
+  # neighbor on a weak beat is marked.
+  describe "a double neighbor whose neighbors are both dissonant" do
+    def held_note_marks(upper)
+      line = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/4\nK:C\nV:upper\n#{upper}\nV:lower\nC4|C4|]\n").voices.first
+      assess(described_class, line).marks.map(&:code)
+    end
+
+    # F is a fourth over C, and D on the downbeat a ninth.
+    it "is refused from beat 3, marking the neighbor before the barline" do
+      expect(held_note_marks("g g e f|d e c2|]")).to eq ["1:4:000 to 2:1:000"]
+    end
+
+    # F on the downbeat is a fourth over C, and D a ninth.
+    it "is refused from beat 4, marking the neighbor after the downbeat" do
+      expect(held_note_marks("e e e e|f d e2|]")).to eq ["2:2:000 to 2:3:000"]
+    end
+  end
+
   context "with no notes" do
     it { is_expected.to be_adherent }
   end

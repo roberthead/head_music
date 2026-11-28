@@ -90,6 +90,34 @@ RSpec.shared_examples "dissonance figure placement" do
       expect(placement_marks("e c' b g|a b d'2|]", "C4|D4|]", meter: "2/2")).to eq ["1:2:000 to 1:2:960"]
     end
   end
+
+  # Four quarters do not fit in the bar, so the figure returns on the next
+  # downbeat.
+  describe "in three-four time" do
+    it "recognizes a double neighbor in quarters from the downbeat" do
+      expect(placement_marks("e f d|e2 g|c'3|]", "C3|C3|C3|]", meter: "3/4")).to eq []
+    end
+
+    it "refuses a double neighbor from beat 2" do
+      expect(placement_marks("g e f|d e2|c'3|]", "C3|C3|C3|]", meter: "3/4")).to include "1:3:000 to 2:1:000"
+    end
+
+    it "refuses a double neighbor whose second neighbor is held over the barline" do
+      expect(placement_marks("e f d-|d e2|c'3|]", "C3|C3|C3|]", meter: "3/4")).to eq ["1:2:000 to 1:3:000", "1:3:000 to 2:2:000"]
+    end
+
+    # The return falls on the next downbeat, but the neighbors are an eighth
+    # and a half note, so they are not a bar's even beats after the main tone.
+    it "refuses a double neighbor returning on the next downbeat in uneven values" do
+      expect(placement_marks("e/ f/ d2|e3|]", "C3|C3|]", meter: "3/4")).to eq ["1:1:480 to 1:2:000", "1:2:000 to 2:1:000"]
+    end
+
+    # Even values, in dotted quarters, but the return falls after the next
+    # downbeat rather than on it.
+    it "refuses a double neighbor returning after the next downbeat" do
+      expect(placement_marks("e3/2 f3/2|d3/2 e3/2|c'3|]", "C3|C3|C3|]", meter: "3/4")).to include "1:2:480 to 2:1:000"
+    end
+  end
 end
 
 # The note values the florid and free guidelines ask of a dissonance: a half

@@ -30,6 +30,13 @@ describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
     end
   end
 
+  # F on the downbeat is a fourth over C, and D a ninth.
+  context "with a double neighbor from beat 4 whose neighbors are both dissonant" do
+    it "marks both neighbors" do
+      expect(marks_over_held_notes("e e e e|f d e2|]", "C4|C4|]")).to eq ["2:1:000 to 2:2:000", "2:2:000 to 2:3:000"]
+    end
+  end
+
   context "with no notes" do
     it { is_expected.to be_adherent }
   end

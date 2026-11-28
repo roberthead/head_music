@@ -45,7 +45,17 @@ class HeadMusic::Style::Guideline
 
     def double_neighbor_placed?(figure)
       onset = accented_onset(figure[1])
-      !onset.nil? && downbeat_position?(onset) && figure.last.position.bar_number == onset.bar_number
+      !onset.nil? && downbeat_position?(onset) && returns_in_time?(figure, onset)
+    end
+
+    # Within the bar, or on the next downbeat where the neighbors in even
+    # values fill the bar after the main tone, as quarters do in 3/4.
+    def returns_in_time?(figure, onset)
+      closing = figure.last.position
+      return true if closing.bar_number == onset.bar_number
+
+      value = figure[1].rhythmic_duration
+      closing == onset.start_of_next_bar && closing == onset + value + value + value
     end
 
     # The strong beat in the note's bar from which one of the note's own value

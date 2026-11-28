@@ -226,6 +226,16 @@ describe HeadMusic::Style::Guidelines::FreeDissonanceTreatment do
     end
   end
 
+  # F on the downbeat is a fourth over C, and D a ninth.
+  context "with a double neighbor from beat 4 whose neighbors are both dissonant" do
+    let(:upper) { "e e e e|f d e2|]" }
+    let(:lower) { "C4|C4|]" }
+
+    it "marks both neighbors" do
+      expect(marks_in(upper_voice)).to eq ["2:1:000 to 2:2:000", "2:2:000 to 2:3:000"]
+    end
+  end
+
   describe "a figure in the lower voice" do
     context "with a double neighbor from the downbeat" do
       let(:upper) { "g4|g4|]" }
