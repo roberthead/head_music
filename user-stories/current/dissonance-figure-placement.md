@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-24T18:42:00-08:00
   planned_at:   2026-11-24T19:15:02-08:00
   finished_at:
-  updated_at:   2026-11-27T12:37:03-08:00
+  updated_at:   2026-11-28T10:21:07-08:00
 -->
 
 # Story: Place the Cambiata and Double Neighbor in the Bar
@@ -102,6 +102,8 @@ Not checked: Open Music Theory's fifth species chapter, and any second source fo
 - **Free species follows fifth species in all of it** (Rob, 2026-11-24). The free species guide is "fifth species' treatment, with either voice able to explain a dissonance", and it already reads dissonance from note values for the eighth after a dotted quarter. No source treats two free voices separately; Salzer & Schachter's "combined species" is three voices with a cantus firmus, so this extends their fifth species rule rather than quoting one.
 
 - **Placement is read from the dissonant notes** (Claude's reading, put to Rob with the figure 87a finding and not disputed). A cambiata begins on a downbeat when its dissonance falls on the weak beat after the downbeat, whenever its first note was attacked. The double neighbor is read the same way: its neighbors fall on the two beats after the downbeat and it returns within the bar. `e2 f d | e`, a half-note main tone with the neighbors on beats 3 and 4 and the return on the next downbeat, is therefore not a double neighbor begun on the downbeat. This last case was not put to Rob as its own question.
+
+- **In 3/4 a double neighbor returns on the next downbeat** (Rob, 2026-11-28, after the review). Four quarters do not fit in the bar, so the same-bar reading refused every quarter-note double neighbor in 3/4, which `main` accepted. The figure returns within the bar, or on the next downbeat where its neighbors in even values fill the bar after the main tone. Three even quarters from the downbeat always land within a bar of 4/4 or 2/2, so the duple meters read as before and `e f d2 | e` stays refused.
 
 - **A cambiata from beat 4 is specified in free species only** (Rob, 2026-11-24, at planning). The figure's second and fifth notes are the same pitch (C–B–G–A–B). Begun on beat 4, both lie in one bar over one cantus firmus note, so a dissonant second note makes the fifth dissonant and the shape is no cambiata. It exists only against a moving voice, where its dissonance is attacked on a downbeat and is marked already.
 
@@ -245,6 +247,7 @@ Implemented on 2026-11-25, with the continuation criterion added on 2026-11-27. 
 | `553eb959` | The florid and free sentences, in seven locales |
 | `b52180f5` | `ContinueAfterDoubleNeighbor` reads only a recognized double neighbor |
 | `2b4b7c9e` | The sentences name the figures without their placement; the five translations removed |
+| `96c29b7f` | A double neighbor in 3/4 returns on the next downbeat; the two double neighbor specs the review found missing |
 
 ### Measured
 
@@ -252,6 +255,7 @@ Implemented on 2026-11-25, with the continuation criterion added on 2026-11-27. 
 - **The pinned corpus.** Regenerated at `d2c3167a` and at `6edffe76`: 0 of 5,808 rows differ. At `0a55d7b7`, 576 rows gain an item, the gated rows of `third_species_harmony`, `first_three_species_harmony`, `fifth_species_harmony`, `free_species_harmony`, and their four composites, 72 each. 224 of them rise, 28 in each guide, by at most 0.008920 (`third_species_triple_meter_examples-0-v1` under `third_species_harmony`, 0.839442 to 0.848362). 352 move in item count only. No row's fitness falls, and no row's message count or adherence changes, so no voice in the corpus is marked by the new guideline.
 - **Fixtures.** The Fux fixture specs pass unchanged at every commit. No mark moved, primary or secondary.
 - **Suite.** `rake validate` at `8b8fec0d`: 19,411 examples, 0 failures, no lint offenses, no vulnerabilities, and RubyCritic exit 1 for one file graded D. After `5d71eac0`, `rake rubycritic` exits 0 with no file below C. `rake validate` at `553eb959`: 19,421 examples, 0 failures, exit 0. At `b52180f5`: 19,423 examples, 0 failures, exit 0, RubyCritic 83.46. At `2b4b7c9e`: the same counts and score, exit 0.
+- **The triple-meter return.** At `96c29b7f`, `e f d | e2 g | c'3` over a held C in 3/4 is unmarked in all three guidelines, as on `main`, and `ContinueAfterDoubleNeighbor` marks its leap out. Every existing example passes unchanged, among them the 4/4 and 2/2 lines from the probe table, and `e f d2 | e` and `e2 f2 | d2 e2` in 4/4 still earn their marks. The corpus snapshot regenerated at `96c29b7f` is identical: 0 of 5,808 rows differ. `rake validate` at `96c29b7f`: 19,444 examples, 0 failures, no lint offenses, no vulnerabilities, RubyCritic 83.45, exit 0.
 - **The continuation guideline.** Before `b52180f5`, five lines that leave the figure by leap were probed against the third species and florid guidelines and `ContinueAfterDoubleNeighbor`. Four earned a continuation mark on a shape at least one dissonance guideline had refused: quarters from beat 2 (`g e f d | e | g`), half notes (`e2 f2 | d2 e2 | a`), a half note then quarters (`e2 f d | e2 a2`), and eighths from the downbeat (`e/ f/ d/ e/ g2`), which only the florid and free guidelines refuse. At `b52180f5` none of the four is marked, and quarters from the downbeat (`e f d e | g`) still is. The corpus snapshot regenerated at `b52180f5` is identical: 0 of 5,808 rows differ.
 
 ### Checked by deletion
@@ -278,6 +282,16 @@ At `b52180f5`, against `continue_after_double_neighbor_spec.rb`:
 | --- | --- |
 | The filter, so every double neighbor is read | 5: the shape begun on the second beat, on the third beat, in half notes, mixing half notes and quarters, and in eighth notes |
 | The quarter notes, so placement alone is asked | 1: "when it is in eighth notes from the downbeat" |
+
+At `96c29b7f`, against `spec/head_music/style/guidelines` and `spec/head_music/style/guideline`:
+
+| Clause removed | Examples that fail |
+| --- | --- |
+| The return on the next downbeat, so the figure must return within the bar | 4: "recognizes a double neighbor in quarters from the downbeat" in 3/4, in all three guidelines, and the continuation spec's leap out of it |
+| The next downbeat, so even values alone are asked | 1: third species, "refuses a double neighbor returning after the next downbeat" |
+| The even values, so any return on the next downbeat is allowed | 2: third species, "is refused where it returns in the next bar" and "refuses a double neighbor returning on the next downbeat in uneven values" |
+
+The florid and free guidelines refuse the last two lines for their note values as well, so only third species fails.
 
 Two clauses could not fail on the lines the plan gave, and each has a line of its own in `8b8fec0d`:
 
@@ -310,7 +324,7 @@ Checked on the web on 2026-11-25. Sourced: "double broderie" and "cambiata" (Ala
 
 ### Open
 
-- **Meters other than 4/4 and 2/2** are not pinned, as the plan said.
+- **Meters other than 4/4, 2/2, and 3/4** are not pinned. In 3/2 the meter makes only the downbeat strong, so a cambiata begun on the second half note is marked, which `main` did not do; the CHANGELOG says so.
 - **The release bump** is still to be settled.
 
 ## BardTheory follow-up
@@ -366,3 +380,7 @@ Reviewed on 2026-11-27 at `d1998328`, with no uncommitted changes. An independen
 4. **A quarter tied to a quarter counts as a half note.** `half_note_or_longer?` reads total duration, as the plan said it would, so `e f-f e | c4` over C is marked in the florid and free guidelines as a half-note neighbor tone. This follows the Decision on half notes; it is recorded here so it is not mistaken for a bug.
 
 No convention problems were found: no assignment in a condition, no stdout assertions, `described_class` throughout, and every changed file ends with a newline. RubyCritic grades and the suite counts in the Implementation Notes were not rechecked.
+
+### Resolved after the review
+
+At `96c29b7f`. Finding 1: Rob chose on 2026-11-28 that a 3/4 double neighbor returns on the next downbeat (see Decisions). The 3/4 lines are pinned in the shared placement examples and the continuation spec, and the CHANGELOG names the 3/4 rule and the 3/2 cambiata. Criterion 10: the double neighbor from beat 4 with both neighbors dissonant is pinned in all three guidelines, and from beat 3 in third species. Criteria 10 and 13 are now met. Findings 2 to 4 stand as written.
